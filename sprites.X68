@@ -35,16 +35,6 @@ BuildSprites:
     
     rts
 
-DrawTestSprite:
-    lea     palmTree,a3
-    bsr     DrawSprite
-    rts
-
-ClearTestSprite:
-    move.w  palmTreeSpriteSize,spriteSize
-    bsr     ClearSprite
-    rts
-    
 DrawPalmTree:
     lea     palmTree,a3
     bsr     DrawSprite
@@ -93,15 +83,23 @@ DrawSprite:
     
     rts
     
-GetVertex:   ; load the next two bytes of a3, ($aa,$bb) into d0 as a long ($00aa00bb)
+GetVertex:          ; load the next two bytes of a3, ($aa,$bb) into d0 as a long ($00aa00bb)
     moveq   #0,d0
     move.b  (a3)+,d0
-    lsl.l   #8,d0
-    lsl.l   #8,d0
+    bsr     ScaleNumber
+    swap    d0
     move.b  (a3)+,d0
+    bsr     ScaleNumber
     add.l   spriteOrigin,d0
     rts
-    
+
+ScaleNumber:        ; scale d0 by spriteScale%
+    move.w  d0,d5
+    mulu    spriteScale,d5
+    divu    #100,d5
+    move.w  d5,d0
+    rts
+
 ClearSprite:
     move.l  #COLOUR_BACKGROUND,d1
     bsr     SetBackgroundColour
@@ -113,17 +111,20 @@ ClearSprite:
     moveq   #0,d2
     moveq   #0,d3
     moveq   #0,d4
+
     move.w  spriteOrigin,d1
     move.w  spriteOrigin+2,d2
 
     move.w  d1,d3
     move.w  #0,d0
     move.b  spriteSize,d0
+    bsr     scaleNumber
     add.w   d0,d3
 
     move.w  d1,d4
     move.w  #0,d0
     move.b  spriteSize+1,d0
+    bsr     scaleNumber
     add.w   d0,d4
 
     moveq   #87,d0
@@ -134,24 +135,24 @@ ClearSprite:
 FindSpriteSize:
     move.l  #0,spriteSize
     moveq   #0,d0
-    moveq   #0,d1
-    moveq   #0,d2
     move.b  (a3)+,d0            ; number of polygons in sprite
     subq    #1,d0
     
 .PolygonLoop:
+    moveq   #0,d1
     move.b  (a3)+,d1            ; number of vertices
     subq    #1,d1
 .VertexLoop:
+    moveq   #0,d2
     move.b  (a3)+,d2            ; x
     cmp.b   spriteSize,d2       ; check for highest x
     bls     .NotHighestX
-    move.b  d2,(spriteSize)
+    move.b  d2,spriteSize
 .NotHighestX:
     move.b  (a3)+,d2            ; y
     cmp.b   spriteSize+1,d2     ; check for highest y
     bls     .NotHighestY
-    move.b  d2,(spriteSize+1)
+    move.b  d2,spriteSize+1
 .NotHighestY:
     dbra    d1,.VertexLoop
 
@@ -164,7 +165,7 @@ FindSpriteSize:
 ;====================================================
 spriteSize      dc.w    $0000       ; $wwhh
 spriteOrigin    dc.l    $00000000   ; $xxxxyyyy
-
+spriteScale     dc.w    100         ; scale percentage; 100%
 
 *~Font name~Courier New~
 *~Font size~10~

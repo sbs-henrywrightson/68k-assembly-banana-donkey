@@ -8,28 +8,12 @@
 *-----------------------------------------------------------
 
 Main:
-    bsr     MoveSprite
-    rts
+    move.w  #100,spriteOrigin     ; x
+    move.w  #100,spriteOrigin+2   ; y
 
-MoveSprite:
-    move.w  #0,d0
+    move.w  #75,spriteScale
+    bsr     DrawPalmTree
 
-.MoveLoop:
-    move.w  d0,spriteOrigin     ; x
-    move.w  d0,spriteOrigin+2   ; y
-    
-    CacheRegisters
-    bsr     ClearCycleCounter
-    bsr     DrawTestSprite
     bsr     RepaintScreen
-    bsr     ClearTestSprite
-    RestoreRegisters
     
-    add.w   #5,d0
-    cmp.w   #400,d0
-    bls     .MoveLoop
-    bsr     DrawTestSprite
-    bsr     DisplayCycleCounter
-    bsr     RepaintScreen
-
     rts
