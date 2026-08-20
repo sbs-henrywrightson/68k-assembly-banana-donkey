@@ -21,10 +21,7 @@ MoveSprite:
     CacheRegisters
     bsr     ClearCycleCounter
     bsr     DrawTestSprite
-    
-    ;moveq   #10,d1
-    ;bsr     Wait
-    
+    bsr     RepaintScreen
     bsr     ClearTestSprite
     RestoreRegisters
     
@@ -33,5 +30,6 @@ MoveSprite:
     bls     .MoveLoop
     bsr     DrawTestSprite
     bsr     DisplayCycleCounter
+    bsr     RepaintScreen
 
     rts

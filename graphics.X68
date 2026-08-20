@@ -9,12 +9,22 @@
 *-----------------------------------------------------------
 
 InitialiseEnvironment:     ; set the output window
+    bsr     SetScreenResolution
+    bsr     SetDoubleBufferMode
+    bsr     ClearScreen
+    
+    rts
+
+SetScreenResolution:
     move.b  #33,d0
     move.l  #RES_X*$10000+RES_Y,d1
     trap    #15
-    
-    bsr     ClearScreen
-    
+    rts
+
+SetDoubleBufferMode:
+    moveq   #92,d0
+    moveq   #17,d1
+    trap    #15
     rts
 
 ClearScreen:            ; clear the screen
@@ -52,6 +62,11 @@ ReverseRGB:             ; convert d1 from $00RRGGBB to $00BBGGRR
     lsl.w   #8,d1
     lsr.l   #8,d1
 
+    rts
+
+RepaintScreen:
+    moveq   #94,d0
+    trap    #15
     rts
 
 ;===================================================
