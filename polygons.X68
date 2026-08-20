@@ -31,6 +31,7 @@ BuildPolygon:               ; draw the polygon described by the vertices
     bsr     ResetScanLines
     
     lea     vertices,a0    
+    moveq   #0,d1
     move.w  (a0)+,d1        ; number of vertices
     subq    #1,d1
     move.l  a0,a1
@@ -72,6 +73,7 @@ ResetScanLines:             ; fill the scanLineLeft with max value and scanLineR
     adda.w  d0,a0           ; shift the pointer along so it starts at MinY and not 0
     adda.w  d0,a1
     
+    moveq   #0,d1
     move.w  scanLineMaxY,d0
     sub.w   scanLineMinY,d0
 .Loop:
@@ -117,6 +119,7 @@ FillPolygon:
 
 DrawPolygon:
     lea     vertices,a0
+    moveq   #0,d5
     move.w  (a0)+,d5        ; number of vertices
     subq    #1,d5
     move.l  a0,a1
@@ -140,30 +143,6 @@ DrawPolygon:
     dbra    d5,.VerticesLoop
     
     rts
-
-*DrawScanLineEnds:
-*    lea     scanLineLeft,a0
-*    lea     scanLineRight,a1
-*    
-*    move.w  scanLineMinY,d0
-*    add.w   d0,d0           ; double it cos we're adding a word for each MinY
-*    adda.w  d0,a0           ; shift the pointer along so it starts at MinY and not 0
-*    adda.w  d0,a1
-*    
-*    move.w  scanLineMinY,d5
-*.Loop
-*    move.w  (a0)+,d1        ; start-x from the left scan line
-*    move.w  d5,d2           ; start-y from the counter
-*    move.w  (a1)+,d3        ; end-x from the right scan line
-*    move.w  d5,d4           ; end-y from the counter
-*    
-*    moveq   #84,d0          ; draw the line between (d1,d2) and (d3,d4)
-*    trap    #15
-*    
-*    addq    #1,d5           ; increment the y-coord
-*    cmp.w   scanLineMaxY,d5
-*    bls     .Loop
-*    rts
 
 ;====================================================
 ;================== Polygon variables ===============

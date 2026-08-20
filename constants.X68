@@ -11,15 +11,16 @@
 RES_X               equ     650
 RES_Y               equ     650
 
-; colour constants all formatted $00BBGGRR
-COLOUR_BACKGROUND   equ     $00000000   ; black
+; colour constants, $RRGGBB
+COLOUR_BACKGROUND   equ     $000000 ; black
 
-COLOUR_WHITE        equ     $00ffffff   ; white
-COLOUR_RED          equ     $000000ff   ; red
-COLOUR_GREEN        equ     $000d9c33   ; green
+COLOUR_WHITE        equ     $ffffff ; white
+COLOUR_RED          equ     $ff0000 ; red
+COLOUR_GREEN        equ     $339c0d ; green
 
 ; polygon constants
 MAX_VERTICES        equ     20
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

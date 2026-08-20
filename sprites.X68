@@ -61,8 +61,8 @@ DrawSprite:
     subq    #1,d2
 
 .PolygonLoop:
-    moveq   #0,d1
     lea     vertices,a0
+    moveq   #0,d1
     move.b  (a3)+,d1    ; d1=number of vertices
     move.w  d1,(a0)+
     subq    #1,d1
@@ -71,17 +71,21 @@ DrawSprite:
     move.l  d0,(a0)+    ; add vertex to list of vertices
     dbra    d1,.VertexLoop
     
-    move.b  (a3)+,red
-    move.b  (a3)+,green
-    move.b  (a3)+,blue
-    bsr     MoveRGBToD1
-    move.l  d1,fillColour
+    moveq   #0,d0
+    move.b  (a3)+,d0
+    swap    d0
+    move.b  (a3)+,d0
+    lsl.w   #8,d0
+    move.b  (a3)+,d0
+    move.l  d0,fillColour
 
-    move.b  (a3)+,red
-    move.b  (a3)+,green
-    move.b  (a3)+,blue
-    bsr     MoveRGBToD1
-    move.l  d1,outlineColour
+    moveq   #0,d0
+    move.b  (a3)+,d0
+    swap    d0
+    move.b  (a3)+,d0
+    lsl.w   #8,d0
+    move.b  (a3)+,d0
+    move.l  d0,outlineColour
     
     bsr     DrawFilledPolygon
     
@@ -136,16 +140,16 @@ FindSpriteSize:
     subq    #1,d0
     
 .PolygonLoop:
-    move.b  (a3)+,d1    ; number of vertices
+    move.b  (a3)+,d1            ; number of vertices
     subq    #1,d1
 .VertexLoop:
-    move.b  (a3)+,d2    ; x
-    cmp.b   spriteSize,d2  ; check for highest x
+    move.b  (a3)+,d2            ; x
+    cmp.b   spriteSize,d2       ; check for highest x
     bls     .NotHighestX
     move.b  d2,(spriteSize)
 .NotHighestX:
-    move.b  (a3)+,d2    ; y
-    cmp.b   spriteSize+1,d2    ; check for highest y
+    move.b  (a3)+,d2            ; y
+    cmp.b   spriteSize+1,d2     ; check for highest y
     bls     .NotHighestY
     move.b  d2,(spriteSize+1)
 .NotHighestY:
@@ -160,6 +164,7 @@ FindSpriteSize:
 ;====================================================
 spriteSize      dc.w    $0000       ; $wwhh
 spriteOrigin    dc.l    $00000000   ; $xxxxyyyy
+
 
 *~Font name~Courier New~
 *~Font size~10~

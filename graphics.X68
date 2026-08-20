@@ -18,19 +18,21 @@ InitialiseEnvironment:     ; set the output window
     rts
 
 ClearScreen:            ; clear the screen
-    move    #0,d0
+    move.l  #COLOUR_BACKGROUND,d1
     bsr     SetPenColour
     moveq   #11,d0
     move.w  #$ff00,d1
     trap    #15
     rts
 
-SetPenColour:           ; set pen colour to d1.l ($00BBGGRR)
+SetPenColour:           ; set pen colour to d1.l ($00RRGGBB)
+    bsr     ReverseRGB
     moveq   #80,d0
     trap    #15
     rts
 
-SetBackgroundColour:    ; set background colour to d1.l ($00BBGGRR)
+SetBackgroundColour:    ; set background colour to d1.l ($00RRGGBB)
+    bsr     ReverseRGB
     moveq   #81,d0
     trap    #15
     rts
@@ -44,22 +46,17 @@ DrawLine:               ; draw a line between (d1.w,d2.w) and (d3.w,d4.w)
     moveq   #84,d0
     trap    #15
 
-MoveRGBToD1:            ; place the colours in Red, Green, Blue variables into d1.l as $00BBGGRR
-    moveq   #0,d1
-    move.b  blue,d1
-    lsl.l   #8,d1
-    or.b    green,d1
-    lsl.l   #8,d1
-    or.b    red,d1
+ReverseRGB:             ; convert d1 from $00RRGGBB to $00BBGGRR
+    ror.w   #8,d1
+    swap    d1
+    lsl.w   #8,d1
+    lsr.l   #8,d1
+
     rts
 
 ;===================================================
 ;================ colour variables =================
 ;===================================================
-red     dc.b    0
-green   dc.b    0
-blue    dc.b    0
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
+;red     dc.b    0
+;green   dc.b    0
+;blue    dc.b    0

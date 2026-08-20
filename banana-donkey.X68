@@ -8,46 +8,27 @@
 *-----------------------------------------------------------
     org     $1000
     
-    include 'constants.x68'
-    include 'diagnostics.x68'
-    include 'sprite-data.x68'
+    include 'constants.X68'
+    include 'diagnostics.X68'
+    include 'sprite-data.X68'
     
-    include 'macros.x68'
-    include 'core.x68'
+    include 'macros.X68'
+    include 'core.X68'
+    include 'main.X68'
     
 Start:
     bsr     InitialiseEnvironment
     bsr     BuildSprites
 
-MoveSprite:    
-    move.w  #0,d0
-
-.MoveLoop:
-    move.w  d0,spriteOrigin     ; x
-    move.w  d0,spriteOrigin+2   ; y
-    
-    CacheRegisters
-    bsr     ClearCycleCounter
-    bsr     DrawTestSprite
-    
-    ;moveq   #3,d1
-    ;bsr     Wait
-    
-    bsr     ClearTestSprite
-    RestoreRegisters
-    
-    add.w   #1,d0
-    cmp.w   #400,d0
-    bls     .MoveLoop
-    bsr     DisplayCycleCounter
+    bsr     Main
 
     bra     Finish
     
-    include 'sprites.x68'
+    include 'sprites.X68'
     
-    include 'polygons.x68'
-    include 'bresenham-line.x68'
-    include 'graphics.x68'
+    include 'polygons.X68'
+    include 'bresenham-line.X68'
+    include 'graphics.X68'
 
 Finish:
     simhalt
