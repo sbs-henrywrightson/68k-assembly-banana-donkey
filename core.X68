@@ -11,6 +11,9 @@ Wait:       ; wait for d1/100ths of a second
     moveq   #23,d0
     trap    #15
     rts
+
+GetKey:
+    
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

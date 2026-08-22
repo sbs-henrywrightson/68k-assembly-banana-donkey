@@ -1,0 +1,15 @@
+horizontal flip : origin = 1,1 size = 8,2
+
+a-------b     a=0,0    b=8,0
+ \     /
+  c---d       c=2,2    d=6,2
+
+flipX
+b-------a     a=8,0    b=0,0        sizex-spritex, y
+ \     /
+  d---c       c=6,0    d=2,2
+
+flipY
+  c---d       c=2,0    d=6,0        x, sizey-spritey
+ /     \
+a-------b     a=0,2    b=8,2

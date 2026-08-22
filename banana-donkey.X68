@@ -4,7 +4,8 @@
 * Date       : 16/8/2026
 * Type       : Program file
 * Depends on : 
-* Description:
+* Description: The main program file that includes all the
+*            : required files and starts the game
 *-----------------------------------------------------------
     org     $1000
     

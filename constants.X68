@@ -9,7 +9,7 @@
 
 ; graphics constants
 RES_X               equ     650
-RES_Y               equ     650
+RES_Y               equ     480
 
 ; colour constants, $RRGGBB
 COLOUR_BACKGROUND   equ     $000000 ; black

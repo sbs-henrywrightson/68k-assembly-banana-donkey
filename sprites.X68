@@ -8,42 +8,19 @@
 *-----------------------------------------------------------
 
 BuildSprites:
-    ; TEST SQUARE
-    lea     testSquare,a3
-    bsr     FindSpriteSize
-    move.w  spriteSize,testSquareSpriteSize
-
-    ; TEST TRIANGLE
-    lea     testTriangle,a3
-    bsr     FindSpriteSize
-    move.w  spriteSize,testTriangleSpriteSize
-
-    ; TEST HEXAGON
-    lea     testHexagon,a3
-    bsr     FindSpriteSize
-    move.w  spriteSize,testHexagonSpriteSize
-
-    ; TEST SHAPE
-    lea     testShape,a3
-    bsr     FindSpriteSize
-    move.w  spriteSize,testShapeSpriteSize
-
-    ; PALM TREE
-    lea     palmTree,a3
+    lea     palmTree,a3     ; PALM TREE
     bsr     FindSpriteSize
     move.w  spriteSize,palmTreeSpriteSize
-    
-    rts
 
-DrawPalmTree:
-    lea     palmTree,a3
-    bsr     DrawSprite
-    rts
+    lea     sandDune,a3     ; SAND DUNE
+    bsr     FindSpriteSize
+    move.w  spriteSize,sandDuneSpriteSize
 
-ClearPalmTree:
-    move.w  palmTreeSpriteSize,spriteSize
-    bsr     ClearSprite
-    rts    
+    lea     seaFoam,a3      ; SEA FOAM
+    bsr     FindSpriteSize
+    move.w  spriteSize,seaFoamSpriteSize
+
+    rts 
 
 DrawSprite:
     moveq   #0,d2
@@ -61,20 +38,10 @@ DrawSprite:
     move.l  d0,(a0)+    ; add vertex to list of vertices
     dbra    d1,.VertexLoop
     
-    moveq   #0,d0
-    move.b  (a3)+,d0
-    swap    d0
-    move.b  (a3)+,d0
-    lsl.w   #8,d0
-    move.b  (a3)+,d0
+    bsr     ReadSpriteColour
     move.l  d0,fillColour
 
-    moveq   #0,d0
-    move.b  (a3)+,d0
-    swap    d0
-    move.b  (a3)+,d0
-    lsl.w   #8,d0
-    move.b  (a3)+,d0
+    bsr     ReadSpriteColour
     move.l  d0,outlineColour
     
     bsr     DrawFilledPolygon
@@ -82,29 +49,62 @@ DrawSprite:
     dbra    d2,.PolygonLoop
     
     rts
-    
-GetVertex:          ; load the next two bytes of a3, ($aa,$bb) into d0 as a long ($00aa00bb)
+
+ReadSpriteColour:
     moveq   #0,d0
     move.b  (a3)+,d0
-    bsr     ScaleNumber
     swap    d0
     move.b  (a3)+,d0
+    lsl.w   #8,d0
+    move.b  (a3)+,d0
+    rts
+
+GetVertex:          ; load the next two bytes of a3, ($aa,$bb) into d0 as a long ($00aa00bb)
+    move.b  (a3)+,spriteX
+    move.b  (a3)+,spriteY
+    bsr     FlipVertex
+
+    moveq   #0,d0
+    move.b  spriteX,d0
     bsr     ScaleNumber
+    swap    d0
+    move.b  spriteY,d0
+    bsr     ScaleNumber
+
     add.l   spriteOrigin,d0
     rts
 
-ScaleNumber:        ; scale d0 by spriteScale%
+ScaleNumber:                ; scale d0 by spriteScale%
     move.w  d0,d5
     mulu    spriteScale,d5
     divu    #100,d5
     move.w  d5,d0
     rts
 
+FlipVertex:
+    move.w  spriteFlip,d0
+
+    btst    #0,d0
+    beq.s   .NoX
+    move.b  spriteSize,d5
+    sub.b   spriteX,d5
+    move.b  d5,spriteX
+
+.NoX:
+    btst    #1,d0
+    beq.s   .NoY
+    move.b  spriteSize+1,d5
+    sub.b   spriteY,d5
+    move.b  d5,spriteY
+
+.NoY:
+    rts
+
 ClearSprite:
-    move.l  #COLOUR_BACKGROUND,d1
+    move.l  #COLOUR_GREEN,d1
     bsr     SetBackgroundColour
     
-    move.l  #COLOUR_BACKGROUND,d1
+    move.l  #COLOUR_WHITE,d1
     bsr     SetPenColour
     
     moveq   #0,d1
@@ -116,13 +116,13 @@ ClearSprite:
     move.w  spriteOrigin+2,d2
 
     move.w  d1,d3
-    move.w  #0,d0
+    moveq   #0,d0
     move.b  spriteSize,d0
     bsr     scaleNumber
     add.w   d0,d3
 
-    move.w  d1,d4
-    move.w  #0,d0
+    move.w  d2,d4
+    moveq   #0,d0
     move.b  spriteSize+1,d0
     bsr     scaleNumber
     add.w   d0,d4
@@ -166,6 +166,9 @@ FindSpriteSize:
 spriteSize      dc.w    $0000       ; $wwhh
 spriteOrigin    dc.l    $00000000   ; $xxxxyyyy
 spriteScale     dc.w    100         ; scale percentage; 100%
+spriteFlip      dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
+spriteX         dc.b    0
+spriteY         dc.b    0
 
 *~Font name~Courier New~
 *~Font size~10~
