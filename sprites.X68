@@ -20,6 +20,9 @@ BuildSprites:
     bsr     FindSpriteSize
     move.w  spriteSize,seaFoamSpriteSize
 
+    lea     banana,a3       ; BANANA
+    bsr     FindSpriteSize
+    move.w  spriteSize,bananaSpriteSize
     rts 
 
 DrawSprite:

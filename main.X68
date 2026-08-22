@@ -8,11 +8,10 @@
 *-----------------------------------------------------------
 
 Main:
-    ;bsr     PositionSprite
-    bsr     DrawBackdrop
-    bsr     DrawBackLayer
-    bsr     DrawFrontLayer
-    bsr     RepaintScreen
+    bsr     PositionSprite
+    ;bsr     DrawBackdrop
+    ;bsr     DrawSceneSprites
+    ;bsr     RepaintScreen
     
     rts
     
@@ -38,7 +37,7 @@ DrawBackdrop:
     move.w  #0,d1       ; x0
     move.w  #150,d2      ; y0
     move.w  #650,d3   ; x1
-    move.w  #340,d4   ; y1
+    move.w  #419,d4   ; y1
     trap    #15
 
     ; SEA
@@ -48,22 +47,20 @@ DrawBackdrop:
     bsr     SetPenColour
     moveq   #87,d0
     move.w  #0,d1       ; x0
-    move.w  #340,d2   ; y0
+    move.w  #420,d2   ; y0
     move.w  #650,d3   ; x1
     move.w  #480,d4   ; y1
     trap    #15
 
     rts
 
-DrawBackLayer:
+DrawSceneSprites:
     SetSprite sandDune,sandDuneSpriteSize,#0,#230,#140,#0
     bsr     DrawSprite
 
     SetSprite sandDune,sandDuneSpriteSize,#400,#240,#100,#0
     bsr     DrawSprite
-    rts
 
-DrawFrontLayer:
     SetSprite palmTree,palmTreeSpriteSize,#20,#100,#85,#1
     bsr     DrawSprite
 
@@ -73,36 +70,36 @@ DrawFrontLayer:
     SetSprite palmTree,palmTreeSpriteSize,#430,#70,#100,#0
     bsr     DrawSprite
 
-    SetSprite seaFoam,seaFoamSpriteSize,#0,#322,#100,#0
+    SetSprite seaFoam,seaFoamSpriteSize,#0,#402,#100,#0
     bsr     DrawSprite
 
-    SetSprite seaFoam,seaFoamSpriteSize,#215,#326,#80,#0
+    SetSprite seaFoam,seaFoamSpriteSize,#215,#406,#80,#0
     bsr     DrawSprite
 
-    SetSprite seaFoam,seaFoamSpriteSize,#395,#325,#100,#2
+    SetSprite seaFoam,seaFoamSpriteSize,#395,#405,#100,#2
     bsr     DrawSprite
 
     rts
 
 PositionSprite:
-    move.w  #220,posX
-    move.w  #320,posY
-    move.w  #100,scale
+    move.w  #50,posX
+    move.w  #50,posY
+    move.w  #20,scale
     move.w  #0,flip
     
 .MoveLoop:
     bsr     DrawBackdrop
-    bsr     DrawBackLayer
+    bsr     DrawSceneSprites
+    bsr     RepaintScreen
 
-    SetSprite seaFoam,seaFoamSpriteSize,posX,posY,scale,flip
+    SetSprite banana,bananaSpriteSize,posX,posY,scale,flip
     bsr     DrawSprite
-
     bsr     OutputInfo
-    bsr     DrawFrontLayer
 
     bsr     RepaintScreen
 
     bsr     ClearScreen
+    
     bsr     MoveSprite
     bra     .MoveLoop
     
