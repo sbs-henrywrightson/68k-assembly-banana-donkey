@@ -7,13 +7,14 @@
 * Description: Macros
 *-----------------------------------------------------------
 
-SetSprite macro ; sprite, spriteSize, x, y, scale, flip
+SetSprite macro ; 1=sprite, 2=spriteSize, 3=spriteDBNumber, 4=x, 5=y, 6=scale, 7=flip
     lea     \1,a3
     move.w  \2,spriteSize
-    move.w  \3,spriteOrigin
-    move.w  \4,spriteOrigin+2
-    move.w  \5,spriteScale
-    move.w  \6,spriteFlip
+    move.w  \3,spriteDBNumber
+    move.w  \4,spriteOrigin
+    move.w  \5,spriteOrigin+2
+    move.w  \6,spriteScale
+    move.w  \7,spriteFlip
     endm
 
 CacheRegisters macro
@@ -22,6 +23,14 @@ CacheRegisters macro
 
 RestoreRegisters macro
     movem.l (a7)+,d0-d7/a0-a6
+    endm
+
+CacheDataRegisters macro
+    movem.l d0-d7,-(a7)
+    endm
+
+RestoreDataRegisters macro
+    movem.l (a7)+,d0-d7
     endm
 
 *~Font name~Courier New~

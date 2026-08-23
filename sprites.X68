@@ -164,15 +164,17 @@ FindSpriteSize:
     rts
 
 SaveDirtyRectangle:         ; save the colour of the pixels in the dirty rectangle of a sprite
+    CacheDataRegisters
+
+    bsr     LoadDirtyBuffer
+
     moveq   #0,d0           ; trap15-task
     moveq   #0,d1           ; trap15-x
     moveq   #0,d2           ; trap15-y
-
     moveq   #0,d3           ; sprite-width-scaled
     moveq   #0,d4           ; sprite-height-scaled
     moveq   #0,d5           ; x-counter
     moveq   #0,d6           ; y-counter
-    lea     dirtyRectangleBuffer,a0
 
     move.b  spriteSize,d0 ; width of sprite
     bsr     ScaleNumber
@@ -198,18 +200,20 @@ SaveDirtyRectangle:         ; save the colour of the pixels in the dirty rectang
     dbra    d5,.WidthLoop
     dbra    d6,.HeightLoop
 
+    RestoreDataRegisters
     rts
 
 RestoreDirtyRectangle:      ; restore the colour of the pixels in the dirty rectangle of a sprite
+    CacheDataRegisters
+
+    bsr     LoadDirtyBuffer
     moveq   #0,d0           ; trap15-task
     moveq   #0,d1           ; trap15-x
     moveq   #0,d2           ; trap15-y
-
     moveq   #0,d3           ; sprite-width-scaled
     moveq   #0,d4           ; sprite-height-scaled
     moveq   #0,d5           ; x-counter
     moveq   #0,d6           ; y-counter
-    lea     dirtyRectangleBuffer,a0
 
     move.b  spriteSize,d0 ; width of sprite
     bsr     ScaleNumber
@@ -238,17 +242,26 @@ RestoreDirtyRectangle:      ; restore the colour of the pixels in the dirty rect
     dbra    d5,.WidthLoop
     dbra    d6,.HeightLoop
 
+    RestoreDataRegisters
+    rts
+
+LoadDirtyBuffer:
+    move.w  spriteDBNumber,d0
+    mulu.w  #SPRITE_BUFFER_OFFSET,d0
+    lea     dirtyRectangleBuffer,a0
+    adda.l  d0,a0
     rts
 
 ;====================================================
 ;================= sprites variables ================
 ;====================================================
-spriteSize              dc.w    $0000       ; $wwhh
-spriteOrigin            dc.l    $00000000   ; $xxxxyyyy
-spriteScale             dc.w    100         ; scale percentage; 100%
-spriteFlip              dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
-spriteX                 dc.b    0
-spriteY                 dc.b    0
+spriteDBNumber      dc.w    0           ; the number used to reference which part of the dirty buffer this sprite should use
+spriteSize          dc.w    $0000       ; $wwhh
+spriteOrigin        dc.l    $00000000   ; $xxxxyyyy
+spriteScale         dc.w    100         ; scale percentage; 100%
+spriteFlip          dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
+spriteX             dc.b    0
+spriteY             dc.b    0
 
 *~Font name~Courier New~
 *~Font size~10~

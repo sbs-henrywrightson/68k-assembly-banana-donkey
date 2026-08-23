@@ -8,11 +8,9 @@
 *-----------------------------------------------------------
 
 Main:
+    ;bsr     TestFrameRate
     bsr     PositionSprite
-    ;bsr     DrawBackdrop
-    ;bsr     DrawSceneSprites
-    ;bsr     RepaintScreen
-    
+
     rts
     
 DrawBackdrop:
@@ -55,56 +53,150 @@ DrawBackdrop:
     rts
 
 DrawSceneSprites:
-    SetSprite sandDune,sandDuneSpriteSize,#0,#230,#140,#0
+    SetSprite sandDune,sandDuneSpriteSize,#0,#0,#230,#140,#0
     bsr     DrawSprite
 
-    SetSprite sandDune,sandDuneSpriteSize,#400,#240,#100,#0
+    SetSprite sandDune,sandDuneSpriteSize,#0,#400,#240,#100,#0
     bsr     DrawSprite
 
-    SetSprite palmTree,palmTreeSpriteSize,#20,#100,#85,#1
+    SetSprite palmTree,palmTreeSpriteSize,#0,#20,#100,#85,#1
     bsr     DrawSprite
 
-    SetSprite palmTree,palmTreeSpriteSize,#80,#150,#65,#0
+    SetSprite palmTree,palmTreeSpriteSize,#0,#80,#150,#65,#0
     bsr     DrawSprite
 
-    SetSprite palmTree,palmTreeSpriteSize,#430,#70,#100,#0
+    SetSprite palmTree,palmTreeSpriteSize,#0,#430,#70,#100,#0
     bsr     DrawSprite
 
-    SetSprite seaFoam,seaFoamSpriteSize,#0,#402,#100,#0
+    SetSprite sandDune,sandDuneSpriteSize,#0,#310,#280,#100,#1
     bsr     DrawSprite
 
-    SetSprite seaFoam,seaFoamSpriteSize,#215,#406,#80,#0
+    SetSprite seaFoam,seaFoamSpriteSize,#0,#0,#402,#100,#0
     bsr     DrawSprite
 
-    SetSprite seaFoam,seaFoamSpriteSize,#395,#405,#100,#2
+    SetSprite seaFoam,seaFoamSpriteSize,#0,#215,#406,#80,#0
+    bsr     DrawSprite
+
+    SetSprite seaFoam,seaFoamSpriteSize,#0,#395,#405,#100,#2
     bsr     DrawSprite
 
     rts
 
-PositionSprite:
+TestFrameRate:
     move.w  #50,posX
     move.w  #50,posY
     move.w  #20,scale
     move.w  #0,flip
     
+    bsr     ClearScreen
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
     bsr     RepaintScreen
 
 .MoveLoop:
-    SetSprite banana,bananaSpriteSize,posX,posY,scale,flip
+    move.b   maxSprites,spriteCounter
+.SaveDirty
+    bsr     ShiftSprite
+    SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
     bsr     SaveDirtyRectangle
+    bsr     DecrementSpriteCounter
+    tst.b   spriteCounter
+    bne     .SaveDirty
+
+    move.b  maxSprites,spriteCounter
+.Unshift1
+    bsr     UnshiftSprite
+    bsr     DecrementSpriteCounter
+    tst.b   spriteCounter
+    bne     .Unshift1
+
+    move.b   maxSprites,spriteCounter
+.DrawSprites
+    bsr     ShiftSprite
+    SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
     bsr     DrawSprite
+    bsr     DecrementSpriteCounter
+    tst.b   spriteCounter
+    bne     .DrawSprites
+
+    move.b   maxSprites,spriteCounter
+.Unshift2
+    bsr     UnshiftSprite
+    bsr     DecrementSpriteCounter
+    tst.b   spriteCounter
+    bne     .Unshift2
+
     bsr     OutputInfo
+    bsr     RepaintScreen       ; display the current screen before removing all the sprites
 
-    bsr     RepaintScreen
-
-    ;bsr     ClearScreen
+    move.b   maxSprites,spriteCounter
+.RestoreDirty
+    bsr     ShiftSprite
+    SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
     bsr     RestoreDirtyRectangle
+    bsr     DecrementSpriteCounter
+    tst.b   spriteCounter
+    bne     .RestoreDirty
+
+    move.b   maxSprites,spriteCounter
+.Unshift3
+    bsr     UnshiftSprite
+    bsr     DecrementSpriteCounter
+    tst.b   spriteCounter
+    bne     .Unshift3
     
     bsr     MoveSprite
     bra     .MoveLoop
+    rts
+
+DecrementSpriteCounter:
+    moveq   #0,d0
+    move.b  spriteCounter,d0
+    sub.b   #1,d0
+    move.b  d0,spriteCounter
+    rts
+
+ShiftSprite:
+    moveq   #0,d0
+    move.w  posX,d0
+    add.w   #5,d0
+    move.w  d0,posX
+    moveq   #0,d0
+    move.w  posY,d0
+    add.w   #5,d0
+    move.w  d0,posY
+    rts
+UnshiftSprite:
+    moveq   #0,d0
+    move.w  posX,d0
+    sub.w   #5,d0
+    move.w  d0,posX
+    moveq   #0,d0
+    move.w  posY,d0
+    sub.w   #5,d0
+    move.w  d0,posY
+    rts
+
+PositionSprite:
+    move.w  #50,posX
+    move.w  #50,posY
+    move.w  #100,scale
+    move.w  #0,flip
+
+.MoveLoop
+    bsr     ClearScreen
+    bsr     DrawBackdrop
+    bsr     DrawSceneSprites
+
+    bsr     MoveSprite
+    SetSprite sandDune,sandDuneSpriteSize,#0,posX,posY,scale,flip
+    bsr     DrawSprite
     
+    bsr     OutputInfo
+    bsr     RepaintScreen
+    bra     .MoveLoop
+    rts
+
 MoveSprite:
     bsr     SetMoveAmount
     bsr     SetScaleAmount
@@ -279,3 +371,6 @@ flipMessage     dc.b    'Flip: ',0
 spacer          dc.b    '   -   ',0
 flip            dc.w    0
 scale           dc.w    100
+
+spriteCounter   dc.b    0           ; the current sprite being drawn
+maxSprites      dc.b    8

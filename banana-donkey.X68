@@ -34,11 +34,7 @@ Start:
 Finish:
     simhalt
 
-
-;====================================================
-;================== buffer variables ================
-;====================================================
-dirtyRectangleBuffer    ds.l    262144      ; screen buffer large enough to a 2x sprite dirty buffer
+    include 'buffers.X68'
 
     end     Start
     
