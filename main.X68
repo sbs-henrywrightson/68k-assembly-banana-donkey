@@ -87,18 +87,20 @@ PositionSprite:
     move.w  #20,scale
     move.w  #0,flip
     
-.MoveLoop:
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
     bsr     RepaintScreen
 
+.MoveLoop:
     SetSprite banana,bananaSpriteSize,posX,posY,scale,flip
+    bsr     SaveDirtyRectangle
     bsr     DrawSprite
     bsr     OutputInfo
 
     bsr     RepaintScreen
 
-    bsr     ClearScreen
+    ;bsr     ClearScreen
+    bsr     RestoreDirtyRectangle
     
     bsr     MoveSprite
     bra     .MoveLoop

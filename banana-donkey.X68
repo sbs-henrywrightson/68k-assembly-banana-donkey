@@ -34,8 +34,15 @@ Start:
 Finish:
     simhalt
 
+
+;====================================================
+;================== buffer variables ================
+;====================================================
+dirtyRectangleBuffer    ds.l    262144      ; screen buffer large enough to a 2x sprite dirty buffer
+
     end     Start
     
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

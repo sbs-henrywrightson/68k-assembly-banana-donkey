@@ -27,18 +27,18 @@ BuildSprites:
 
 DrawSprite:
     moveq   #0,d2
-    move.b  (a3)+,d2    ; loop counter
+    move.b  (a3)+,d2        ; loop counter
     subq    #1,d2
 
 .PolygonLoop:
     lea     vertices,a0
     moveq   #0,d1
-    move.b  (a3)+,d1    ; d1=number of vertices
+    move.b  (a3)+,d1        ; d1=number of vertices
     move.w  d1,(a0)+
     subq    #1,d1
 .VertexLoop:
     bsr     GetVertex
-    move.l  d0,(a0)+    ; add vertex to list of vertices
+    move.l  d0,(a0)+        ; add vertex to list of vertices
     dbra    d1,.VertexLoop
     
     bsr     ReadSpriteColour
@@ -62,7 +62,7 @@ ReadSpriteColour:
     move.b  (a3)+,d0
     rts
 
-GetVertex:          ; load the next two bytes of a3, ($aa,$bb) into d0 as a long ($00aa00bb)
+GetVertex:                  ; load the next two bytes of a3, ($aa,$bb) into d0 as a long ($00aa00bb)
     move.b  (a3)+,spriteX
     move.b  (a3)+,spriteY
     bsr     FlipVertex
@@ -138,22 +138,22 @@ ClearSprite:
 FindSpriteSize:
     move.l  #0,spriteSize
     moveq   #0,d0
-    move.b  (a3)+,d0            ; number of polygons in sprite
+    move.b  (a3)+,d0        ; number of polygons in sprite
     subq    #1,d0
     
 .PolygonLoop:
     moveq   #0,d1
-    move.b  (a3)+,d1            ; number of vertices
+    move.b  (a3)+,d1        ; number of vertices
     subq    #1,d1
 .VertexLoop:
     moveq   #0,d2
-    move.b  (a3)+,d2            ; x
-    cmp.b   spriteSize,d2       ; check for highest x
+    move.b  (a3)+,d2        ; x
+    cmp.b   spriteSize,d2   ; check for highest x
     bls     .NotHighestX
     move.b  d2,spriteSize
 .NotHighestX:
-    move.b  (a3)+,d2            ; y
-    cmp.b   spriteSize+1,d2     ; check for highest y
+    move.b  (a3)+,d2        ; y
+    cmp.b   spriteSize+1,d2 ; check for highest y
     bls     .NotHighestY
     move.b  d2,spriteSize+1
 .NotHighestY:
@@ -163,15 +163,92 @@ FindSpriteSize:
     dbra    d0,.PolygonLoop
     rts
 
+SaveDirtyRectangle:         ; save the colour of the pixels in the dirty rectangle of a sprite
+    moveq   #0,d0           ; trap15-task
+    moveq   #0,d1           ; trap15-x
+    moveq   #0,d2           ; trap15-y
+
+    moveq   #0,d3           ; sprite-width-scaled
+    moveq   #0,d4           ; sprite-height-scaled
+    moveq   #0,d5           ; x-counter
+    moveq   #0,d6           ; y-counter
+    lea     dirtyRectangleBuffer,a0
+
+    move.b  spriteSize,d0 ; width of sprite
+    bsr     ScaleNumber
+    move.w  d0,d3
+
+    move.b  spriteSize+1,d0   ; height of sprite
+    bsr     ScaleNumber
+    move.w  d0,d4
+
+    move.w  d4,d6           ; set y-counter to sprite-height-scaled
+.HeightLoop                 ; loop over the y-axis from high to low
+    move.w  d6,d2           ; set trap15-y to y-counter
+    add.w   spriteOrigin+2,d2 ; add the y-offset to trap15-y
+    move.l  d3,d5           ; reset the x-counter to sprite-width-scaled
+.WidthLoop                  ; loop over the x-axis from right to left
+    move.w  d5,d1           ; set trap15-x to x-counter
+    add.w   spriteOrigin,d1 ; add the x-offset to trap15-x
+    
+    moveq   #83,d0          ; get the pixel colour of the pixel at trap15-x,trap15-y
+    trap    #15
+
+    move.l  d0,(a0)+        ; store the pixel in the buffer
+    dbra    d5,.WidthLoop
+    dbra    d6,.HeightLoop
+
+    rts
+
+RestoreDirtyRectangle:      ; restore the colour of the pixels in the dirty rectangle of a sprite
+    moveq   #0,d0           ; trap15-task
+    moveq   #0,d1           ; trap15-x
+    moveq   #0,d2           ; trap15-y
+
+    moveq   #0,d3           ; sprite-width-scaled
+    moveq   #0,d4           ; sprite-height-scaled
+    moveq   #0,d5           ; x-counter
+    moveq   #0,d6           ; y-counter
+    lea     dirtyRectangleBuffer,a0
+
+    move.b  spriteSize,d0 ; width of sprite
+    bsr     ScaleNumber
+    move.w  d0,d3
+
+    move.b  spriteSize+1,d0   ; height of sprite
+    bsr     ScaleNumber
+    move.w  d0,d4
+
+    move.w  d4,d6           ; set y-counter to sprite-height-scaled
+.HeightLoop                 ; loop over the y-axis from high to low
+    move.w  d6,d2           ; set trap15-y to y-counter
+    add.w   spriteOrigin+2,d2 ; add the y-offset to trap15-y
+    move.l  d3,d5           ; reset the x-counter to sprite-width-scaled
+.WidthLoop                  ; loop over the x-axis from right to left
+    move.l  (a0)+,d1        ; get the pixel colour from the buffer
+    moveq   #80,d0          ; set the pen colour
+    trap    #15
+
+    move.w  d5,d1           ; set trap15-x to x-counter
+    add.w   spriteOrigin,d1 ; add the x-offset to trap15-x
+    
+    moveq   #82,d0          ; draw a pixel at trap15-x,trap15-y
+    trap    #15
+
+    dbra    d5,.WidthLoop
+    dbra    d6,.HeightLoop
+
+    rts
+
 ;====================================================
 ;================= sprites variables ================
 ;====================================================
-spriteSize      dc.w    $0000       ; $wwhh
-spriteOrigin    dc.l    $00000000   ; $xxxxyyyy
-spriteScale     dc.w    100         ; scale percentage; 100%
-spriteFlip      dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
-spriteX         dc.b    0
-spriteY         dc.b    0
+spriteSize              dc.w    $0000       ; $wwhh
+spriteOrigin            dc.l    $00000000   ; $xxxxyyyy
+spriteScale             dc.w    100         ; scale percentage; 100%
+spriteFlip              dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
+spriteX                 dc.b    0
+spriteY                 dc.b    0
 
 *~Font name~Courier New~
 *~Font size~10~
