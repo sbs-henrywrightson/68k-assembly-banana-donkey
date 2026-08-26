@@ -34,17 +34,17 @@ TestFrameRate:
     move.w  #20,scale
     move.w  #0,flip
     
-    bsr     ClearScreen
-    bsr     DrawBackdrop
-    bsr     DrawSceneSprites
-    bsr     RepaintScreen
+    jsr     ClearScreen
+    jsr     DrawBackdrop
+    jsr     DrawSceneSprites
+    jsr     RepaintScreen
 
 .MoveLoop:
     move.b   maxSprites,spriteCounter
 .SaveDirty:
     bsr     ShiftSprite
     SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
-    bsr     SaveDirtyRectangle
+    jsr     SaveDirtyRectangle
     bsr     DecrementSpriteCounter
     tst.b   spriteCounter
     bne     .SaveDirty
@@ -60,7 +60,7 @@ TestFrameRate:
 .DrawSprites:
     bsr     ShiftSprite
     SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
-    bsr     DrawSprite
+    jsr     DrawSprite
     bsr     DecrementSpriteCounter
     tst.b   spriteCounter
     bne     .DrawSprites
@@ -73,13 +73,13 @@ TestFrameRate:
     bne     .Unshift2
 
     bsr     OutputInfo
-    bsr     RepaintScreen       ; display the current screen before removing all the sprites
+    jsr     RepaintScreen       ; display the current screen before removing all the sprites
 
     move.b   maxSprites,spriteCounter
 .RestoreDirty:
     bsr     ShiftSprite
     SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
-    bsr     RestoreDirtyRectangle
+    jsr     RestoreDirtyRectangle
     bsr     DecrementSpriteCounter
     tst.b   spriteCounter
     bne     .RestoreDirty
@@ -132,18 +132,18 @@ PositionSprite:
     move.w  #30,scale
     move.w  #0,flip
 
-    bsr     ClearScreen
-    bsr     DrawBackdrop
-    bsr     DrawSceneSprites
+    jsr     ClearScreen
+    jsr     DrawBackdrop
+    jsr     DrawSceneSprites
 
 .MoveLoop:
     SetSprite banana,bananaSpriteSize,#0,posX,posY,scale,flip
-    bsr     SaveDirtyRectangle
-    bsr     DrawSprite    
+    jsr     SaveDirtyRectangle
+    jsr     DrawSprite    
     bsr     OutputInfo
-    bsr     RepaintScreen
+    jsr     RepaintScreen
 
-    bsr     RestoreDirtyRectangle
+    jsr     RestoreDirtyRectangle
     bsr     MoveSprite
     bra     .MoveLoop
     rts

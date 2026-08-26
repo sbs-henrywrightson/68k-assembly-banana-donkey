@@ -16,7 +16,7 @@ DrawFilledPolygon:
     CacheRegisters
     
     move.l  fillColour,d1
-    bsr     SetPenColour
+    jsr     SetPenColour
     
     bsr     BuildPolygon        ; calculate the outline of the polygon
     bsr     FillPolygon         ; fill it in with horizontal lines
@@ -24,7 +24,7 @@ DrawFilledPolygon:
     move.l  outlineColour,d1    ; if the outline colour is different, draw the outline
     cmp.l   fillColour,d1
     beq     .SkipOutline
-    bsr     SetPenColour
+    jsr     SetPenColour
     bsr     DrawPolygon
 .SkipOutline:
     RestoreRegisters
@@ -51,7 +51,7 @@ BuildPolygon:               ; draw the polygon described by the vertices
     move.w  d0,d7           ; y0
     swap    d0
     move.w  d0,d6           ; x0
-    bsr     MarkLine        ; line A-B
+    jsr     MarkLine        ; line A-B
     dbra    d1,.VerticesLoop
     rts
 

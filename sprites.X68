@@ -70,7 +70,7 @@ DrawSprite:
     bsr     ReadSpriteColour
     move.l  d0,outlineColour
     
-    bsr     DrawFilledPolygon
+    jsr     DrawFilledPolygon
     
     dbra    d2,.PolygonLoop
     
@@ -128,10 +128,10 @@ FlipVertex:
 
 ClearSprite:
     move.l  #COLOUR_GREEN,d1
-    bsr     SetBackgroundColour
+    jsr     SetBackgroundColour
     
     move.l  #COLOUR_WHITE,d1
-    bsr     SetPenColour
+    jsr     SetPenColour
     
     moveq   #0,d1
     moveq   #0,d2
