@@ -9,6 +9,9 @@
 *            : them to create a filled polygon
 *-----------------------------------------------------------
 
+;====================================================
+;================ Polygon Sub-routines ==============
+;====================================================
 DrawFilledPolygon:
     CacheRegisters
     
@@ -143,18 +146,3 @@ DrawPolygon:
     dbra    d5,.VerticesLoop
     
     rts
-
-;====================================================
-;================== Polygon variables ===============
-;====================================================
-scanLineMinY    dc.w    0
-scanLineMaxY    dc.w    0
-
-fillColour      dc.l    $00ffffff
-outlineColour   dc.l    $00ffffff
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

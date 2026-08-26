@@ -10,7 +10,10 @@
 *            : later go along that list and draw lines between them
 *            : to create a filled triangle
 *-----------------------------------------------------------
-    
+
+;====================================================
+;=================== Bresenham Line =================
+;====================================================
 MarkLine:               ; walk along a line from (d4,d5) to (d6,d7) using the Bresenham Algorithm and mark the points in the scanLine lists. d2=e2  d3=error d4=x0  d5=y0  d6=x1  d7=y1
     CacheRegisters
     
@@ -96,24 +99,3 @@ MarkPoint:              ; store the x of the line points in the scanLineLeft or 
     move.w  x,(a1,d1.w)
 .NotRight
     rts
-
-;===================================================
-;============== bresenham variables ================
-;===================================================
-; bresenham-line variables
-x               dc.w    0
-y               dc.w    0
-dx              dc.w    0
-dy              dc.w    0
-sx              dc.w    0
-sy              dc.w    0
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

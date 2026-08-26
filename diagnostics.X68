@@ -7,6 +7,9 @@
 * Description: Sub-routines used for debugging the main app
 *-----------------------------------------------------------
 
+;====================================================
+;==================== Diagnostics ===================
+;====================================================
 ClearCycleCounter:
     moveq   #30,d0
     trap    #15
@@ -24,12 +27,3 @@ DisplayCycleCounter:
     moveq   #10,d2
     trap    #15
     rts
-
-;===================================================
-;============== diagnostics variables ==============
-;===================================================
-cycleMessage dc.b 'Cycle count: ',0
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

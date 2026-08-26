@@ -12,13 +12,20 @@
 ;====================================================
 ;=============== Bresenham Line buffers =============
 ;====================================================
-scanLineLeft    ds.w    RES_Y               ; the start positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
-scanLineRight   ds.w    RES_Y               ; the end positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
+scanLineLeft:    
+    ds.w    RES_Y           ; the start positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
+    ds.l    4               ; spacer
+
+scanLineRight:
+    ds.w    RES_Y           ; the end positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
+    ds.l    4               ; spacer
 
 ;====================================================
 ;=================== Sprite buffers =================
 ;====================================================
-dirtyRectangleBuffer    ds.l    MAX_SPRITES*SPRITE_BUFFER_OFFSET
+dirtyRectangleBuffer:
+    ds.l    MAX_SPRITES*SPRITE_BUFFER_OFFSET
+    ds.l    4               ; spacer
 
 ;====================================================
 ;================== Polygon buffers =================
@@ -27,8 +34,4 @@ dirtyRectangleBuffer    ds.l    MAX_SPRITES*SPRITE_BUFFER_OFFSET
 vertices:
     ds.w    1               ; the number of vertices
     ds.l    MAX_VERTICES    ; the vertices as long words $xxxxyyyy
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
+    ds.l    4               ; spacer

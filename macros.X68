@@ -7,6 +7,9 @@
 * Description: Macros
 *-----------------------------------------------------------
 
+;====================================================
+;======================= Macros =====================
+;====================================================
 SetSprite macro ; 1=sprite, 2=spriteSize, 3=spriteDBNumber, 4=x, 5=y, 6=scale, 7=flip
     lea     \1,a3
     move.w  \2,spriteSize
@@ -32,8 +35,3 @@ CacheDataRegisters macro
 RestoreDataRegisters macro
     movem.l (a7)+,d0-d7
     endm
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

@@ -8,6 +8,9 @@
 *            : for trap #15 tasks
 *-----------------------------------------------------------
 
+;====================================================
+;=============== Graphics Sub-routines ==============
+;====================================================
 InitialiseEnvironment:     ; set the output window
     bsr     SetScreenResolution
     bsr     SetDoubleBufferMode
@@ -68,10 +71,3 @@ RepaintScreen:
     moveq   #94,d0
     trap    #15
     rts
-
-;===================================================
-;================ colour variables =================
-;===================================================
-;red     dc.b    0
-;green   dc.b    0
-;blue    dc.b    0

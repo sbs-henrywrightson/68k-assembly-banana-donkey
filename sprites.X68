@@ -7,6 +7,9 @@
 * Description: routines for displaying various sprites
 *-----------------------------------------------------------
 
+;====================================================
+;================ Sprites Sub-routines ==============
+;====================================================
 GetSpriteSizes:
     lea     palmTree,a3         ; PALM TREE
     bsr     FindSpriteSize
@@ -271,19 +274,3 @@ LoadDirtyBuffer:
     lea     dirtyRectangleBuffer,a0
     adda.l  d0,a0
     rts
-
-;====================================================
-;================= sprites variables ================
-;====================================================
-spriteDBNumber      dc.w    0           ; the number used to reference which part of the dirty buffer this sprite should use
-spriteSize          dc.w    $0000       ; $wwhh
-spriteOrigin        dc.l    $00000000   ; $xxxxyyyy
-spriteScale         dc.w    100         ; scale percentage; 100%
-spriteFlip          dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
-spriteX             dc.b    0
-spriteY             dc.b    0
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

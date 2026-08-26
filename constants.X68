@@ -7,6 +7,9 @@
 * Description: Constants that the main program depends on
 *-----------------------------------------------------------
 
+;====================================================
+;===================== Constants ====================
+;====================================================
 ; graphics constants
 RES_X                   equ     650
 RES_Y                   equ     480
@@ -25,7 +28,11 @@ MAX_VERTICES            equ     22
 MAX_SPRITES             equ     8
 SPRITE_BUFFER_OFFSET    equ     40000   ; pixels in a sprite * 4 bytes per pixel, scaled to 40% that's ~100*100 * 4
 
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
+;====================================================
+;=============== Text Display variables =============
+;====================================================
+cleanEnd        dc.b    '   ',0
+positionMessage dc.b    'Position: ',0
+scaleMessage    dc.b    'Scale: ',0
+flipMessage     dc.b    'Flip: ',0
+spacer          dc.b    '   -   ',0

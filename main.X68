@@ -7,6 +7,9 @@
 * Description: The main entry point to the game
 *-----------------------------------------------------------
 
+;====================================================
+;================= Main Sub-routines ================
+;====================================================
 Main:
     ;bsr     TestFrameRate
     bsr     PositionSprite
@@ -55,6 +58,12 @@ DrawBackdrop:
 DrawSceneSprites:
     ; clouds
     SetSprite cloud,cloudSpriteSize,#0,#50,#20,#40,#0
+    bsr     DrawSprite
+
+    SetSprite cloud,cloudSpriteSize,#0,#110,#20,#60,#0
+    bsr     DrawSprite
+
+    SetSprite cloud,cloudSpriteSize,#0,#550,#20,#20,#1
     bsr     DrawSprite
 
     ; desert hills
@@ -397,21 +406,3 @@ OutputInfo:
     trap    #15
     
     rts
-
-;====================================================
-;=================== Game variables =================
-;====================================================
-moveAmount      dc.w    1
-scaleAmount     dc.w    1
-posX            dc.w    0
-posY            dc.w    0
-cleanEnd        dc.b    '   ',0
-positionMessage dc.b    'Position: ',0
-scaleMessage    dc.b    'Scale: ',0
-flipMessage     dc.b    'Flip: ',0
-spacer          dc.b    '   -   ',0
-flip            dc.w    0
-scale           dc.w    100
-
-spriteCounter   dc.b    0           ; the current sprite being drawn
-maxSprites      dc.b    8
