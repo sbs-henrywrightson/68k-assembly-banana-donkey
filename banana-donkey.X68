@@ -17,10 +17,10 @@ Start:
 
     bsr     InitialiseEnvironment
     bsr     GetSpriteSizes
-    bsr     Main
+    bsr     Game
     bra     Finish
 
-    include 'main.X68'
+    include 'game.X68'
     include 'core.X68'
     
     include 'graphics.X68'
