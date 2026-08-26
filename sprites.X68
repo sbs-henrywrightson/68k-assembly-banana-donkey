@@ -7,22 +7,42 @@
 * Description: routines for displaying various sprites
 *-----------------------------------------------------------
 
-BuildSprites:
-    lea     palmTree,a3     ; PALM TREE
+GetSpriteSizes:
+    lea     palmTree,a3         ; PALM TREE
     bsr     FindSpriteSize
     move.w  spriteSize,palmTreeSpriteSize
 
-    lea     sandDune,a3     ; SAND DUNE
+    lea     sandDune,a3         ; SAND DUNE
     bsr     FindSpriteSize
     move.w  spriteSize,sandDuneSpriteSize
 
-    lea     seaFoam,a3      ; SEA FOAM
+    lea     seaFoam,a3          ; SEA FOAM
     bsr     FindSpriteSize
     move.w  spriteSize,seaFoamSpriteSize
 
-    lea     banana,a3       ; BANANA
+    lea     banana,a3           ; BANANA
     bsr     FindSpriteSize
     move.w  spriteSize,bananaSpriteSize
+
+    lea     hillLeft,a3         ; HILL LEFT
+    bsr     FindSpriteSize
+    move.w  spriteSize,hillLeftSpriteSize
+
+    lea     hillRight,a3        ; HILL RIGHT
+    bsr     FindSpriteSize
+    move.w  spriteSize,hillRightSpriteSize
+
+    lea     donkey,a3           ; DONKEY
+    bsr     FindSpriteSize
+    move.w  spriteSize,donkeySpriteSize
+
+    lea     monkey,a3           ; MONKEY
+    bsr     FindSpriteSize
+    move.w  spriteSize,monkeySpriteSize
+
+    lea     cloud,a3            ; CLOUD
+    bsr     FindSpriteSize
+    move.w  spriteSize,cloudSpriteSize
     rts 
 
 DrawSprite:

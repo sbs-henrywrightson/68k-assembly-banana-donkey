@@ -53,10 +53,34 @@ DrawBackdrop:
     rts
 
 DrawSceneSprites:
-    SetSprite sandDune,sandDuneSpriteSize,#0,#0,#230,#140,#0
+    ; clouds
+    SetSprite cloud,cloudSpriteSize,#0,#50,#20,#40,#0
     bsr     DrawSprite
 
-    SetSprite sandDune,sandDuneSpriteSize,#0,#400,#240,#100,#0
+    ; desert hills
+    SetSprite hillLeft,hillLeftSpriteSize,#0,#0,#124,#70,#0
+    bsr     DrawSprite
+
+    SetSprite hillLeft,hillLeftSpriteSize,#0,#180,#122,#90,#0
+    bsr     DrawSprite
+
+    SetSprite hillRight,hillRightSpriteSize,#0,#431,#126,#80,#1
+    bsr     DrawSprite
+
+    SetSprite hillLeft,hillLeftSpriteSize,#0,#30,#130,#130,#0
+    bsr     DrawSprite
+
+    SetSprite hillRight,hillRightSpriteSize,#0,#390,#140,#50,#0
+    bsr     DrawSprite
+
+    SetSprite hillRight,hillRightSpriteSize,#0,#300,#150,#140,#1
+    bsr     DrawSprite
+
+    SetSprite hillLeft,hillLeftSpriteSize,#0,#0,#160,#190,#0
+    bsr     DrawSprite
+
+    ; left trees & dunes
+    SetSprite sandDune,sandDuneSpriteSize,#0,#0,#230,#140,#0
     bsr     DrawSprite
 
     SetSprite palmTree,palmTreeSpriteSize,#0,#20,#100,#85,#1
@@ -65,12 +89,20 @@ DrawSceneSprites:
     SetSprite palmTree,palmTreeSpriteSize,#0,#80,#150,#65,#0
     bsr     DrawSprite
 
+    SetSprite sandDune,sandDuneSpriteSize,#0,#0,#300,#60,#0
+    bsr     DrawSprite
+
+    ; right trees & dunes
+    SetSprite sandDune,sandDuneSpriteSize,#0,#400,#240,#100,#0
+    bsr     DrawSprite
+
     SetSprite palmTree,palmTreeSpriteSize,#0,#430,#70,#100,#0
     bsr     DrawSprite
 
     SetSprite sandDune,sandDuneSpriteSize,#0,#310,#280,#100,#1
     bsr     DrawSprite
 
+    ; sea
     SetSprite seaFoam,seaFoamSpriteSize,#0,#0,#402,#100,#0
     bsr     DrawSprite
 
@@ -95,7 +127,7 @@ TestFrameRate:
 
 .MoveLoop:
     move.b   maxSprites,spriteCounter
-.SaveDirty
+.SaveDirty:
     bsr     ShiftSprite
     SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
     bsr     SaveDirtyRectangle
@@ -104,14 +136,14 @@ TestFrameRate:
     bne     .SaveDirty
 
     move.b  maxSprites,spriteCounter
-.Unshift1
+.Unshift1:
     bsr     UnshiftSprite
     bsr     DecrementSpriteCounter
     tst.b   spriteCounter
     bne     .Unshift1
 
     move.b   maxSprites,spriteCounter
-.DrawSprites
+.DrawSprites:
     bsr     ShiftSprite
     SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
     bsr     DrawSprite
@@ -120,7 +152,7 @@ TestFrameRate:
     bne     .DrawSprites
 
     move.b   maxSprites,spriteCounter
-.Unshift2
+.Unshift2:
     bsr     UnshiftSprite
     bsr     DecrementSpriteCounter
     tst.b   spriteCounter
@@ -130,7 +162,7 @@ TestFrameRate:
     bsr     RepaintScreen       ; display the current screen before removing all the sprites
 
     move.b   maxSprites,spriteCounter
-.RestoreDirty
+.RestoreDirty:
     bsr     ShiftSprite
     SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
     bsr     RestoreDirtyRectangle
@@ -139,7 +171,7 @@ TestFrameRate:
     bne     .RestoreDirty
 
     move.b   maxSprites,spriteCounter
-.Unshift3
+.Unshift3:
     bsr     UnshiftSprite
     bsr     DecrementSpriteCounter
     tst.b   spriteCounter
@@ -180,20 +212,22 @@ UnshiftSprite:
 PositionSprite:
     move.w  #50,posX
     move.w  #50,posY
-    move.w  #100,scale
+    move.w  #30,scale
     move.w  #0,flip
 
-.MoveLoop
     bsr     ClearScreen
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
 
-    bsr     MoveSprite
-    SetSprite sandDune,sandDuneSpriteSize,#0,posX,posY,scale,flip
-    bsr     DrawSprite
-    
+.MoveLoop:
+    SetSprite banana,bananaSpriteSize,#0,posX,posY,scale,flip
+    bsr     SaveDirtyRectangle
+    bsr     DrawSprite    
     bsr     OutputInfo
     bsr     RepaintScreen
+
+    bsr     RestoreDirtyRectangle
+    bsr     MoveSprite
     bra     .MoveLoop
     rts
 
@@ -203,7 +237,7 @@ MoveSprite:
     bsr     SetSpriteScale
     bsr     SetSpriteFlip
 
-.Continue
+.Continue:
     moveq   #19,d0
     move.l  #$25<<24+$27<<16+$26<<8+$28,d1  ; check for keypress Left, Right, Up, Down    
     trap    #15
@@ -225,11 +259,15 @@ MoveSprite:
     move.w  posX,d0
     sub.w   moveAmount,d0
     move.w  d0,posX
+    moveq   #0,d0
+    move.w  d0,flip
     rts
 .Right:
     move.w  posX,d0
     add.w   moveAmount,d0
     move.w  d0,posX
+    moveq   #1,d0
+    move.w  d0,flip
     rts
 .Up:
     move.w  posY,d0
@@ -250,7 +288,7 @@ SetMoveAmount:
     bne    .SmallMove
     move.w  #10,moveAmount
     rts
-.SmallMove
+.SmallMove:
     move.w  #1,moveAmount
     rts
 
@@ -262,7 +300,7 @@ SetScaleAmount:
     bne    .SmallMove
     move.w  #10,scaleAmount
     rts
-.SmallMove
+.SmallMove:
     move.w  #1,scaleAmount
     rts
 
@@ -278,18 +316,18 @@ SetSpriteScale:
     bne     .Minus
     rts
 
-.Plus
+.Plus:
     move.w  scale,d0
     add.w   scaleAmount,d0
     move.w  d0,scale
     rts
-.Minus
+.Minus:
     move.w  scale,d0
     sub.w   scaleAmount,d0
     cmp.w   #1,d0
     blo     .DontShrink
     move.w  d0,scale
-.DontShrink
+.DontShrink:
     rts
 
 SetSpriteFlip:
@@ -302,9 +340,9 @@ SetSpriteFlip:
     cmp.w   #4,flip
     beq     .ResetFlip
     rts
-.ResetFlip
+.ResetFlip:
     move.w  #0,flip
-.DontFlip
+.DontFlip:
     rts
 
 OutputInfo:
@@ -360,6 +398,9 @@ OutputInfo:
     
     rts
 
+;====================================================
+;=================== Game variables =================
+;====================================================
 moveAmount      dc.w    1
 scaleAmount     dc.w    1
 posX            dc.w    0

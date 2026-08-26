@@ -10,26 +10,22 @@
     org     $1000
     
     include 'constants.X68'
-    include 'diagnostics.X68'
+    include 'macros.X68'
     include 'sprite-data.X68'
     
-    include 'macros.X68'
+    include 'diagnostics.X68'
     include 'core.X68'
     include 'main.X68'
-    
-Start:
-    bsr     InitialiseEnvironment
-    bsr     BuildSprites
-
-    bsr     Main
-
-    bra     Finish
-    
     include 'sprites.X68'
-    
     include 'polygons.X68'
     include 'bresenham-line.X68'
     include 'graphics.X68'
+
+Start:
+    bsr     InitialiseEnvironment
+    bsr     GetSpriteSizes
+    bsr     Main
+    bra     Finish
 
 Finish:
     simhalt

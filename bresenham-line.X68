@@ -39,7 +39,7 @@ MarkLine:               ; walk along a line from (d4,d5) to (d6,d7) using the Br
     move.w  d4,x        ; start the line at x0,y0
     move.w  d5,y
 .Loop:
-    bsr.s   MarkPoint   ; mark point (x, y) in the list of scanLines
+    bsr     MarkPoint   ; mark point (x, y) in the list of scanLines
     
     move.w  d3,d2       ; as the error is measured from the mid-point of the pixel, double it to keep it an integer
     muls.w  #2,d2
@@ -107,10 +107,6 @@ dx              dc.w    0
 dy              dc.w    0
 sx              dc.w    0
 sy              dc.w    0
-
-; bresenham-line buffers
-scanLineLeft    ds.w    RES_Y               ; the start positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
-scanLineRight   ds.w    RES_Y               ; the end positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
 
 
 

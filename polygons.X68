@@ -153,11 +153,6 @@ scanLineMaxY    dc.w    0
 fillColour      dc.l    $00ffffff
 outlineColour   dc.l    $00ffffff
 
-; the points in a polygon as $xxxxyyyy. the first word is the number of vertices in the polygon
-vertices:
-    ds.w    1               ; the number of vertices
-    ds.l    MAX_VERTICES    ; the vertices as long words $xxxxyyyy
-
 
 *~Font name~Courier New~
 *~Font size~10~

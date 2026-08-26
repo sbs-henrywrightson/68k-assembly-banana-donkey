@@ -19,7 +19,7 @@ COLOUR_RED              equ     $ff0000 ; red
 COLOUR_GREEN            equ     $339c0d ; green
 
 ; polygon constants
-MAX_VERTICES            equ     20
+MAX_VERTICES            equ     22
 
 ; dirty rectangle buffer
 MAX_SPRITES             equ     8
