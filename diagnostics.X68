@@ -176,15 +176,15 @@ MoveSprite:
     move.w  posX,d0
     sub.w   moveAmount,d0
     move.w  d0,posX
-    moveq   #0,d0
-    move.w  d0,flip
+    ;moveq   #0,d0          ; DEBUG : Face in the direction of movement
+    ;move.w  d0,flip
     rts
 .Right:
     move.w  posX,d0
     add.w   moveAmount,d0
     move.w  d0,posX
-    moveq   #1,d0
-    move.w  d0,flip
+    ;moveq   #1,d0          ; DEBUG : Face in the direction of movement
+    ;move.w  d0,flip
     rts
 .Up:
     move.w  posY,d0
@@ -266,6 +266,7 @@ OutputInfo:
     moveq   #10,d2
 
     moveq   #11,d0      ; position at 0,0
+    moveq   #0,d1
     move.w  $0000,d1
     trap    #15
     

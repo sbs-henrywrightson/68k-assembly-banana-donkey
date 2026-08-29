@@ -11,41 +11,43 @@
 ;===================== Constants ====================
 ;====================================================
 ; graphics constants
-RES_X                   equ     650
-RES_Y                   equ     480
+RES_X                   equ     650         ; width of screen in pixels
+RES_Y                   equ     480         ; height of screen in pixels
 
 ; colour constants, $RRGGBB
-COLOUR_BACKGROUND       equ     $000000 ; black
-COLOUR_WHITE            equ     $ffffff ; white
-COLOUR_BLACK            equ     $000000 ; black
-COLOUR_RED              equ     $ff0000 ; red
-COLOUR_GREEN            equ     $339c0d ; green
-COLOUR_BLUE             equ     $002ee6 ; blue
+COLOUR_BACKGROUND       equ     $000000     ; black
+COLOUR_WHITE            equ     $ffffff     ; white
+COLOUR_BLACK            equ     $000000     ; black
+COLOUR_GREY             equ     $7a7a7a
+COLOUR_RED              equ     $ff0000     ; red
+COLOUR_GREEN            equ     $339c0d     ; green
+COLOUR_BLUE             equ     $002ee6     ; blue
 
 ; polygon constants
-MAX_VERTICES            equ     22
+MAX_VERTICES            equ     22          ; the maximum number of vertices in a sprite polygone. Keep this EVEN
 
 ; dirty rectangle buffer
-MAX_DIRTY_SPRITES       equ     8
-SPRITE_BUFFER_OFFSET    equ     40000   ; pixels in a sprite * 4 bytes per pixel, 100*100 * 4
+MAX_DIRTY_SPRITES       equ     8           ; total number of sprites that require buffer space for their dirty rectangle
+SPRITE_BUFFER_OFFSET    equ     40000       ; pixels in a sprite * 4 bytes per pixel, 100*100 * 4
 
 ; game constants
-BANANA_EVENT_RATE       equ     75      ; every 750 milliseconds
-BANANA_MOVE_RATE        equ     50      ; every 500 milliseconds
-BANANA_SCALE            equ     20
-MONKEY_ID               equ     6
-MONKEY_X                equ     490
-MONKEY_Y                equ     90
-MONKEY_SCALE            equ     35
-MAX_BANANAS             equ     6
+BANANA_THROW_RATE       equ     75          ; hundredths of a second
+BANANA_MOVE_RATE        equ     15          ; hundredths of a second
+BANANA_SCALE            equ     20          ; percentage of full size
+MONKEY_X                equ     490         ; the x-coord of the monkey
+MONKEY_Y                equ     90          ; the y-coord of the monkey
+MONKEY_SCALE            equ     35          ; percentage of full size
+MAX_BANANAS             equ     6           ; Maximum number of bananas, also the monkey sprite ID
+                                            ;     sprite IDs : 0-5 : bananas (MAX_BANANAS in number)
+                                            ;                    6 : monkey  (Same as MAX_BANANAS)
+                                            ;                    7 : donkey  (one more than MAX_BANANAS)
 
 ;====================================================
 ;=============== Text Display variables =============
 ;====================================================
-cleanEnd        dc.b    '   ',0
-positionMessage dc.b    'Position: ',0
-scaleMessage    dc.b    'Scale: ',0
-flipMessage     dc.b    'Flip: ',0
-spacer          dc.b    '   -   ',0
-cycleMessage    dc.b    'Cycle count: ',0
-laneMessage     dc.b    'Lane bits: ',0
+cleanEnd        dc.b    '   ',0             ; space for the end of a string to cover anything left from before
+positionMessage dc.b    'Position: ',0      ; the current x,y when positioning a sprite
+scaleMessage    dc.b    'Scale: ',0         ; the current scale when positioning a sprite
+flipMessage     dc.b    'Flip: ',0          ; the current flip when positioning a sprite
+spacer          dc.b    '   -   ',0         ; spacer between xy, scale and flip
+cycleMessage    dc.b    'Cycle count: ',0   ; DEBUG : the cycles for performance. Remove when game finished

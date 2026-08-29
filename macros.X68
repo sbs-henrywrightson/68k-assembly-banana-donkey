@@ -10,7 +10,7 @@
 ;====================================================
 ;======================= Macros =====================
 ;====================================================
-SetSprite macro ; 1=sprite, 2=spriteSize, 3=spriteDBNumber, 4=x, 5=y, 6=scale, 7=flip
+SetSprite macro                 ; 1=sprite, 2=spriteSize, 3=spriteDBNumber, 4=x, 5=y, 6=scale, 7=flip
     lea     \1,a3
     move.w  \2,spriteSize
     move.w  \3,spriteDBNumber
@@ -18,6 +18,11 @@ SetSprite macro ; 1=sprite, 2=spriteSize, 3=spriteDBNumber, 4=x, 5=y, 6=scale, 7
     move.w  \5,spriteOrigin+2
     move.w  \6,spriteScale
     move.w  \7,spriteFlip
+    endm
+
+SetFontSize macro               ; 1=size, 2=bold
+    move.b  \1,fontSize
+    move.b  \2,fontBold
     endm
 
 CacheRegisters macro
