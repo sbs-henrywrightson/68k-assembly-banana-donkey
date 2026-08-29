@@ -55,16 +55,16 @@ DrawSprite:
     move.b  (a3)+,d2            ; loop counter
     subq    #1,d2
 
-.PolygonLoop:
+.polygonLoop:
     lea     vertices,a0
     moveq   #0,d1
     move.b  (a3)+,d1            ; d1=number of vertices
     move.w  d1,(a0)+
     subq    #1,d1
-.VertexLoop:
+.vertexLoop:
     bsr     GetVertex
     move.l  d0,(a0)+            ; add vertex to list of vertices
-    dbra    d1,.VertexLoop
+    dbra    d1,.vertexLoop
     
     bsr     ReadSpriteColour
     move.l  d0,fillColour
@@ -74,7 +74,7 @@ DrawSprite:
     
     jsr     DrawFilledPolygon
     
-    dbra    d2,.PolygonLoop
+    dbra    d2,.polygonLoop
     
     RestoreRegisters
     rts
@@ -114,19 +114,17 @@ FlipVertex:
     move.w  spriteFlip,d0
 
     btst    #0,d0
-    beq.s   .NoX
+    beq.s   .noX
     move.b  spriteSize,d5
     sub.b   spriteX,d5
     move.b  d5,spriteX
-
-.NoX:
+.noX:
     btst    #1,d0
-    beq.s   .NoY
+    beq.s   .noY
     move.b  spriteSize+1,d5
     sub.b   spriteY,d5
     move.b  d5,spriteY
-
-.NoY:
+.noY:
     rts
 
 ClearSprite:
@@ -167,66 +165,42 @@ FindSpriteSize:
     move.b  (a3)+,d0            ; number of polygons in sprite
     subq    #1,d0
     
-.PolygonLoop:
+.polygonLoop:
     moveq   #0,d1
     move.b  (a3)+,d1            ; number of vertices
     subq    #1,d1
-.VertexLoop:
+.vertexLoop:
     moveq   #0,d2
     move.b  (a3)+,d2            ; x
     cmp.b   spriteSize,d2       ; check for highest x
-    bls     .NotHighestX
+    bls     .notHighestX
     move.b  d2,spriteSize
-.NotHighestX:
+.notHighestX:
     move.b  (a3)+,d2            ; y
     cmp.b   spriteSize+1,d2     ; check for highest y
-    bls     .NotHighestY
+    bls     .notHighestY
     move.b  d2,spriteSize+1
-.NotHighestY:
-    dbra    d1,.VertexLoop
+.notHighestY:
+    dbra    d1,.vertexLoop
 
     adda.w  #6,a3
-    dbra    d0,.PolygonLoop
+    dbra    d0,.polygonLoop
     rts
 
+************************************************************
+* SaveDirtyRectangle register contract
+************************************************************
+* d0 = trap15-task
+* d1 = trap15-x
+* d2 = trap15-y
+* d3 = sprite-width-scaled
+* d4 = sprite-height-scaled
+* d5 = x-counter
+* d6 = y-counter
+************************************************************
 SaveDirtyRectangle:             ; save the colour of the pixels in the dirty rectangle of a sprite
-    CacheDataRegisters
-
-    bsr     LoadDirtyBuffer
-
-    moveq   #0,d0               ; trap15-task
-    moveq   #0,d1               ; trap15-x
-    moveq   #0,d2               ; trap15-y
-    moveq   #0,d3               ; sprite-width-scaled
-    moveq   #0,d4               ; sprite-height-scaled
-    moveq   #0,d5               ; x-counter
-    moveq   #0,d6               ; y-counter
-
-    move.b  spriteSize,d0       ; width of sprite
-    bsr     ScaleNumber
-    move.w  d0,d3
-
-    move.b  spriteSize+1,d0     ; height of sprite
-    bsr     ScaleNumber
-    move.w  d0,d4
-
-    move.w  d4,d6               ; set y-counter to sprite-height-scaled
-.HeightLoop                     ; loop over the y-axis from high to low
-    move.w  d6,d2               ; set trap15-y to y-counter
-    add.w   spriteOrigin+2,d2   ; add the y-offset to trap15-y
-    move.l  d3,d5               ; reset the x-counter to sprite-width-scaled
-.WidthLoop                      ; loop over the x-axis from right to left
-    move.w  d5,d1               ; set trap15-x to x-counter
-    add.w   spriteOrigin,d1     ; add the x-offset to trap15-x
-    
-    moveq   #83,d0              ; get the pixel colour of the pixel at trap15-x,trap15-y
-    trap    #15
-
-    move.l  d0,(a0)+            ; store the pixel in the buffer
-    dbra    d5,.WidthLoop
-    dbra    d6,.HeightLoop
-
-    RestoreDataRegisters
+    moveq   #0,d7
+    bsr     ProcessDirtyPixels
     rts
 
 ************************************************************
@@ -241,9 +215,27 @@ SaveDirtyRectangle:             ; save the colour of the pixels in the dirty rec
 * d6 = y-counter
 ************************************************************
 RestoreDirtyRectangle:          ; restore the colour of the pixels in the dirty rectangle of a sprite
+    moveq   #1,d7
+    bsr     ProcessDirtyPixels
+    rts
+
+**********************************************
+* ProcessDirtyPixels register contract
+**********************************************
+* d0 = trap15-task
+* d1 = trap15-x
+* d2 = trap15-y
+* d3 = sprite-width-scaled
+* d4 = sprite-height-scaled
+* d5 = x-counter
+* d6 = y-counter
+* d7 = save/restore flag - 0=save, 1=restore, 
+**********************************************
+ProcessDirtyPixels:             ; save the colour of the pixels in the dirty rectangle of a sprite
     CacheDataRegisters
 
     bsr     LoadDirtyBuffer
+
     moveq   #0,d0               ; trap15-task
     moveq   #0,d1               ; trap15-x
     moveq   #0,d2               ; trap15-y
@@ -261,11 +253,24 @@ RestoreDirtyRectangle:          ; restore the colour of the pixels in the dirty 
     move.w  d0,d4
 
     move.w  d4,d6               ; set y-counter to sprite-height-scaled
-.HeightLoop                     ; loop over the y-axis from high to low
+.heightLoop:                    ; loop over the y-axis from high to low
     move.w  d6,d2               ; set trap15-y to y-counter
     add.w   spriteOrigin+2,d2   ; add the y-offset to trap15-y
     move.l  d3,d5               ; reset the x-counter to sprite-width-scaled
-.WidthLoop                      ; loop over the x-axis from right to left
+.widthLoop:                     ; loop over the x-axis from right to left
+    tst.b   d7
+    bne     .restore
+.save:                          ; save pixel into dirty rectangle buffer
+    move.w  d5,d1               ; set trap15-x to x-counter
+    add.w   spriteOrigin,d1     ; add the x-offset to trap15-x
+    
+    moveq   #83,d0              ; get the pixel colour of the pixel at trap15-x,trap15-y
+    trap    #15
+
+    move.l  d0,(a0)+            ; store the pixel in the buffer
+    bra     .nextPixel
+
+.restore:                       ; restore pixel from dirty rectangle buffer onto screen
     move.l  (a0)+,d1            ; get the pixel colour from the buffer
     moveq   #80,d0              ; set the pen colour
     trap    #15
@@ -276,8 +281,9 @@ RestoreDirtyRectangle:          ; restore the colour of the pixels in the dirty 
     moveq   #82,d0              ; draw a pixel at trap15-x,trap15-y
     trap    #15
 
-    dbra    d5,.WidthLoop
-    dbra    d6,.HeightLoop
+.nextPixel:
+    dbra    d5,.widthLoop
+    dbra    d6,.heightLoop
 
     RestoreDataRegisters
     rts
@@ -288,3 +294,4 @@ LoadDirtyBuffer:
     lea     dirtyRectangleBuffer,a0
     adda.l  d0,a0
     rts
+

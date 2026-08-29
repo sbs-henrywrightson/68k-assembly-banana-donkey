@@ -28,101 +28,6 @@ DisplayCycleCounter:
     trap    #15
     rts
 
-TestFrameRate:
-    move.w  #50,posX
-    move.w  #50,posY
-    move.w  #20,scale
-    move.w  #0,flip
-    
-    jsr     ClearScreen
-    jsr     DrawBackdrop
-    jsr     DrawSceneSprites
-    jsr     RepaintScreen
-
-.MoveLoop:
-    move.b   maxSprites,spriteCounter
-.SaveDirty:
-    bsr     ShiftSprite
-    SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
-    jsr     SaveDirtyRectangle
-    bsr     DecrementSpriteCounter
-    tst.b   spriteCounter
-    bne     .SaveDirty
-
-    move.b  maxSprites,spriteCounter
-.Unshift1:
-    bsr     UnshiftSprite
-    bsr     DecrementSpriteCounter
-    tst.b   spriteCounter
-    bne     .Unshift1
-
-    move.b   maxSprites,spriteCounter
-.DrawSprites:
-    bsr     ShiftSprite
-    SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
-    jsr     DrawSprite
-    bsr     DecrementSpriteCounter
-    tst.b   spriteCounter
-    bne     .DrawSprites
-
-    move.b   maxSprites,spriteCounter
-.Unshift2:
-    bsr     UnshiftSprite
-    bsr     DecrementSpriteCounter
-    tst.b   spriteCounter
-    bne     .Unshift2
-
-    bsr     OutputInfo
-    jsr     RepaintScreen       ; display the current screen before removing all the sprites
-
-    move.b   maxSprites,spriteCounter
-.RestoreDirty:
-    bsr     ShiftSprite
-    SetSprite banana,bananaSpriteSize,spriteCounter,posX,posY,scale,flip
-    jsr     RestoreDirtyRectangle
-    bsr     DecrementSpriteCounter
-    tst.b   spriteCounter
-    bne     .RestoreDirty
-
-    move.b   maxSprites,spriteCounter
-.Unshift3:
-    bsr     UnshiftSprite
-    bsr     DecrementSpriteCounter
-    tst.b   spriteCounter
-    bne     .Unshift3
-    
-    bsr     MoveSprite
-    bra     .MoveLoop
-    rts
-
-DecrementSpriteCounter:
-    moveq   #0,d0
-    move.b  spriteCounter,d0
-    sub.b   #1,d0
-    move.b  d0,spriteCounter
-    rts
-
-ShiftSprite:
-    moveq   #0,d0
-    move.w  posX,d0
-    add.w   #5,d0
-    move.w  d0,posX
-    moveq   #0,d0
-    move.w  posY,d0
-    add.w   #5,d0
-    move.w  d0,posY
-    rts
-UnshiftSprite:
-    moveq   #0,d0
-    move.w  posX,d0
-    sub.w   #5,d0
-    move.w  d0,posX
-    moveq   #0,d0
-    move.w  posY,d0
-    sub.w   #5,d0
-    move.w  d0,posY
-    rts
-
 ;====================================================
 ;================= Sprite Diagnostics ===============
 ;====================================================
@@ -136,7 +41,7 @@ PositionSprite:
     jsr     DrawBackdrop
     jsr     DrawSceneSprites
 
-.MoveLoop:
+.moveLoop:
     SetSprite monkey,monkeySpriteSize,#0,posX,posY,scale,flip
     jsr     SaveDirtyRectangle
     jsr     DrawSprite    
@@ -145,7 +50,7 @@ PositionSprite:
 
     jsr     RestoreDirtyRectangle
     bsr     MoveSprite
-    bra     .MoveLoop
+    bra     .moveLoop
     rts
 
 MoveSprite:
@@ -154,44 +59,43 @@ MoveSprite:
     bsr     SetSpriteScale
     bsr     SetSpriteFlip
 
-.Continue:
     moveq   #19,d0
     move.l  #$25<<24+$27<<16+$26<<8+$28,d1  ; check for keypress Left, Right, Up, Down    
     trap    #15
 
     btst.l  #24,d1
-    bne     .Left
+    bne     .left
 
     btst.l  #16,d1
-    bne     .Right
+    bne     .right
     
     btst.l  #8,d1
-    bne     .Up
+    bne     .up
     
     btst.l  #0,d1
-    bne     .Down
+    bne     .down
     rts
 
-.Left:
+.left:
     move.w  posX,d0
     sub.w   moveAmount,d0
     move.w  d0,posX
     ;moveq   #0,d0          ; DEBUG : Face in the direction of movement
     ;move.w  d0,flip
     rts
-.Right:
+.right:
     move.w  posX,d0
     add.w   moveAmount,d0
     move.w  d0,posX
     ;moveq   #1,d0          ; DEBUG : Face in the direction of movement
     ;move.w  d0,flip
     rts
-.Up:
+.up:
     move.w  posY,d0
     sub.w   moveAmount,d0
     move.w  d0,posY
     rts
-.Down:
+.down:
     move.w  posY,d0
     add.w   moveAmount,d0
     move.w  d0,posY
@@ -202,10 +106,10 @@ SetMoveAmount:
     move.l  #$10,d1       ; Shift
     trap    #15
     tst.b   d1
-    bne    .SmallMove
+    bne    .smallMove
     move.w  #10,moveAmount
     rts
-.SmallMove:
+.smallMove:
     move.w  #1,moveAmount
     rts
 
@@ -214,10 +118,10 @@ SetScaleAmount:
     move.l  #$11,d1       ; CTRL
     trap    #15
     tst.b   d1
-    bne    .SmallMove
+    bne    .smallMove
     move.w  #10,scaleAmount
     rts
-.SmallMove:
+.smallMove:
     move.w  #1,scaleAmount
     rts
 
@@ -227,24 +131,24 @@ SetSpriteScale:
     trap    #15
     
     btst.l  #8,d1
-    bne     .Plus
+    bne     .plus
     
     btst.l  #0,d1
-    bne     .Minus
+    bne     .minus
     rts
 
-.Plus:
+.plus:
     move.w  scale,d0
     add.w   scaleAmount,d0
     move.w  d0,scale
     rts
-.Minus:
+.minus:
     move.w  scale,d0
     sub.w   scaleAmount,d0
     cmp.w   #1,d0
-    blo     .DontShrink
+    blo     .dontShrink
     move.w  d0,scale
-.DontShrink:
+.dontShrink:
     rts
 
 SetSpriteFlip:
@@ -252,14 +156,14 @@ SetSpriteFlip:
     move.l  #$46,d1       ; f key
     trap    #15
     tst.b   d1
-    beq     .DontFlip
+    beq     .dontFlip
     add.w   #1,flip
     cmp.w   #4,flip
-    beq     .ResetFlip
+    beq     .resetFlip
     rts
-.ResetFlip:
+.resetFlip:
     move.w  #0,flip
-.DontFlip:
+.dontFlip:
     rts
 
 OutputInfo:

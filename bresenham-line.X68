@@ -29,58 +29,58 @@ MarkLine:               ; walk along a line from (d4,d5) to (d6,d7) using the Br
     
     move.w  #1,sx
     cmp.w   d6,d4       ; if source x is lower than destination y then move left
-    blo     .X0LessThanX1
+    blo     .x0LessThanX1
     move.w  #-1,sx
-.X0LessThanX1:
+.x0LessThanX1:
     move.w  #1,sy
     cmp.w   d7,d5       ; if source y is lower than destination y then move down
-    blo     .Y0LessThanY1
+    blo     .y0LessThanY1
     move.w  #-1,sy
-.Y0LessThanY1:
+.y0LessThanY1:
     move.w  dx,d3       ; the position error how far from the line the current point is
     add.w   dy,d3
     move.w  d4,x        ; start the line at x0,y0
     move.w  d5,y
-.Loop:
+.loop:
     bsr     MarkPoint   ; mark point (x, y) in the list of scanLines
     
     move.w  d3,d2       ; as the error is measured from the mid-point of the pixel, double it to keep it an integer
     muls.w  #2,d2
-.MoveX:
+.moveX:
     cmp.w   dy,d2       ; only change the x position is dy is less than the error
-    blt     .MoveY
+    blt     .moveY
     cmp.w   x,d6        ; if the end of the line on the x-axis has been reached stop
-    beq     .EndLoop
+    beq     .endLoop
     add.w   dy,d3       ; add dy to the error to correct it the other way
     move.w  x,d0        ; move along the x-axis in the direction of travel
     add.w   sx,d0
     move.w  d0,x
-.MoveY:
+.moveY:
     cmp.w   dx,d2       ; only move along the y-axis if dx is more than or equal to the error
-    bge     .Loop
+    bge     .loop
     cmp.w   y,d7        ; if the end of the line on the y-axis has been reached stop
-    beq     .EndLoop
+    beq     .endLoop
     add.w   dx,d3       ; add dx to the error to correct it the other way
     move.w  y,d0        ; move along the y-axis in the direction of travel
     add.w   sy,d0
     move.w  d0,y
-    bra     .Loop
-.EndLoop:
+    bra     .loop
+.endLoop:
     RestoreRegisters
     rts
 
 PositiveD0:             ; convert d0 to a positive number
     tst.w   d0
-    bpl     .Positive
+    bpl     .positive
     neg.w   d0
-.Positive:
+.positive:
     rts
     
 NegativeD0:             ; convert d0 to a negative number
     tst.w   d0
-    bmi     .Negative
+    bmi     .negative
     neg.w   d0
-.Negative:
+.negative:
     rts
 
 MarkPoint:              ; store the x of the line points in the scanLineLeft or scanLineRight array if it's further left or right than what's there already
@@ -91,11 +91,11 @@ MarkPoint:              ; store the x of the line points in the scanLineLeft or 
     add.w   d1,d1       ; y*2 to get the memory offset of the y coordinate
 
     cmp.w   (a0,d1.w),d0
-    bhs     .NotLeft
+    bhs     .notLeft
     move.w  x,(a0,d1.w)
-.NotLeft
+.notLeft
     cmp.w   (a1,d1.w),d0
-    bls     .NotRight
+    bls     .notRight
     move.w  x,(a1,d1.w)
-.NotRight
+.notRight
     rts

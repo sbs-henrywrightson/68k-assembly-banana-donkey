@@ -22,7 +22,7 @@ PlayGame:
 
     bsr     InitialiseGame
 
-.GameLoop:
+.gameLoop:
     moveq   #8,d0
     trap    #15
     move.l  d1,systemTime
@@ -30,18 +30,18 @@ PlayGame:
     move.l  systemTime,d0
     sub.l   bananaMoveTime,d0
     cmp.l   #BANANA_MOVE_RATE,d0               ; is it time to move the bananas
-    blo     .SkipMovement
+    blo     .skipMovement
     bsr     MoveBananas
-.SkipMovement:
+.skipMovement:
 
     move.l  systemTime,d0
     sub.l   bananaThrowTime,d0
     cmp.l   #BANANA_THROW_RATE,d0               ; is it time to throw a banana
-    blo     .SkipThrow
+    blo     .skipThrow
     bsr     ThrowBanana
-.SkipThrow:
+.skipThrow:
 
-    bra     .GameLoop
+    bra     .gameLoop
     rts
     
 DrawBackdrop:
@@ -154,7 +154,7 @@ DrawSceneSprites:
 DrawGrid:
     moveq   #31,d6
 
-.HorizontalLoop:
+.horizontalLoop:
     move.l  #COLOUR_GREY,d1
     jsr     SetPenColour
     
@@ -188,7 +188,7 @@ DrawGrid:
     move.w  d6,d0
     bsr     PlotNumber
 
-    dbra    d6,.HorizontalLoop
+    dbra    d6,.horizontalLoop
 
     ;draw three lines for the three banana lanes
     move.w  #200,d1
@@ -260,43 +260,43 @@ ThrowBanana:
 
     move.w  bananaCount,d0
     cmp.w   #MAX_BANANAS,d0
-    bhs     .EndEvent
+    bhs     .endEvent
 
     moveq   #4,d1
     jsr     RandomChance
-    bne     .EndEvent
+    bne     .endEvent
 
     moveq   #3,d1
     jsr     RandomChance
     cmp.w   #1,d2
-    beq     .Lane1
+    beq     .lane1
     cmp.w   #2,d2
-    beq     .Lane2
-    bra     .Lane3
+    beq     .lane2
+    bra     .lane3
 
-.Lane1:
+.lane1:
     move.l  lane1,d0
     bset    #0,d0
     move.l  d0,lane1
-    bra     .Finally
-.Lane2:
+    bra     .finally
+.lane2:
     move.l  lane2,d0
     bset    #0,d0
     move.l  d0,lane2
-    bra     .Finally
-.Lane3:
+    bra     .finally
+.lane3:
     move.l  lane3,d0
     bset    #0,d0
     move.l  d0,lane3
-    
-.Finally:
+
+.finally:
     addq    #1,bananaCount
 
     bsr     FlipMonkey
     bsr     OutputLanesText     ; DEBUG : REMOVE
     bsr     RefreshLanes
     jsr     RepaintScreen
-.EndEvent:
+.endEvent:
     rts
 
 MoveBananas:
@@ -304,25 +304,25 @@ MoveBananas:
 
     move.l  lane1,d0
     btst    #31,d0
-    beq     .ShiftLane1
+    beq     .shiftLane1
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
-.ShiftLane1
+.shiftLane1:
     lsl.l   #1,d0
     move.l  d0,lane1
     
     move.l  lane2,d0
     btst    #31,d0
-    beq     .ShiftLane2
+    beq     .shiftLane2
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
-.ShiftLane2
+.shiftLane2:
     lsl.l   #1,d0
     move.l  d0,lane2
     
     move.l  lane3,d0
     btst    #31,d0
-    beq     .ShiftLane3
+    beq     .shiftLane3
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
-.ShiftLane3
+.shiftLane3:
     lsl.l   #1,d0
     move.l  d0,lane3
     
@@ -411,55 +411,56 @@ RefreshLanes:
     add.l   lane2,d0
     add.l   lane3,d0
     tst.l   d0
-    beq     .FinishDisplay
+    beq     .finishRefresh
 
     moveq   #2,d3                       ; d3 = 2=clear old banana, 1=save new banana, 0=display new banana
 
-.RemoveDisplayLoop:
+.removeDisplayLoop:
     moveq   #2,d2                       ; d2 = lane number
     moveq   #0,d4                       ; d4 = banana Id
-.LaneLoop:
+.laneLoop:
     moveq   #0,d5
     moveq   #0,d6
     
     cmp.w   #0,d2
-    beq     .ChooseLane1
+    beq     .chooseLane1
     cmp.w   #1,d2
-    beq     .ChooseLane2
-    bra     .ChooseLane3
-.ChooseLane1:
+    beq     .chooseLane2
+    bra     .chooseLane3
+.chooseLane1:
     move.w  #200,d5                     ;d5 = x-coord of banana in lane 1
     cmp.b   #2,d3
-    beq     .RemoveLane1
+    beq     .removeLane1
     move.l  lane1,currentLane
-    bra     .ShowHideBananas
-.RemoveLane1:
+    bra     .laneSelected
+.removeLane1:
     move.l  oldLane1,currentLane
-    bra     .ShowHideBananas
-.ChooseLane2:
+    bra     .laneSelected
+.chooseLane2:
     move.w  #300,d5                     ;d5 = x-coord of banana in lane 2
     cmp.b   #2,d3
-    beq     .RemoveLane2
+    beq     .removeLane2
     move.l  lane2,currentLane
-    bra     .ShowHideBananas
-.RemoveLane2:
+    bra     .laneSelected
+.removeLane2:
     move.l  oldLane2,currentLane
-    bra     .ShowHideBananas
-.ChooseLane3:
+    bra     .laneSelected
+.chooseLane3:
     move.w  #400,d5                     ;d5 = x-coord of banana in lane 3
     cmp.b   #2,d3
-    beq     .RemoveLane3
+    beq     .removeLane3
     move.l  lane3,currentLane
-    bra     .ShowHideBananas
-.RemoveLane3:
+    bra     .laneSelected
+.removeLane3:
     move.l  oldLane3,currentLane
-    bra     .ShowHideBananas
-.ShowHideBananas:
+    bra     .laneSelected
+
+.laneSelected:
     moveq   #31,d1                      ; d1 = current lane position
-.BananaLoop:
+.bananaLoop:
     move.l  currentLane,d0
     btst    d1,d0                       ; check for a banana at position d1 in currentLane
-    beq.s   .NextLanePosition
+    beq.s   .nextLanePosition
     
     move.w  d1,d6                       ; d6 = y-coord of banana
     mulu    #10,d6                      ; space between each banana position
@@ -469,27 +470,28 @@ RefreshLanes:
     addq    #1,d4                       ; increment the banana id after any action
 
     cmp.b   #1,d3
-    beq     .SaveBanana
+    beq     .saveBanana
     cmp.b   #0,d3
-    beq     .DisplayBanana
+    beq     .displayBanana
+.removeBanana
     jsr     RestoreDirtyRectangle
-    bra     .NextLanePosition
-.SaveBanana:
+    bra     .nextLanePosition
+.saveBanana:
     jsr     SaveDirtyRectangle
-    bra     .NextLanePosition
-.DisplayBanana:
+    bra     .nextLanePosition
+.displayBanana:
     jsr     DrawSprite
 
-.NextLanePosition:
-    dbra    d1,.BananaLoop
-    dbra    d2,.LaneLoop
-    dbra    d3,.RemoveDisplayLoop
+.nextLanePosition:
+    dbra    d1,.bananaLoop
+    dbra    d2,.laneLoop
+    dbra    d3,.removeDisplayLoop
 
     move.l  lane1,oldLane1              ; backup the lanes so the bananas can be removed when the lanes change
     move.l  lane2,oldLane2
     move.l  lane3,oldLane3
 
-.FinishDisplay:
+.finishRefresh:
     rts
 
 *~Font name~Courier New~

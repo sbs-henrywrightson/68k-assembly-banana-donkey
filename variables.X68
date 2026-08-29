@@ -1,23 +1,26 @@
 ;===================================================
 ;==================== Variables ====================
 ;===================================================
+
+; Try to keep the number of byte variables EVEN
+
 ; diagnostics
-moveAmount      dc.w    1
-scaleAmount     dc.w    1
-posX            dc.w    0
-posY            dc.w    0
-flip            dc.w    0
-scale           dc.w    100
-spriteCounter   dc.b    0               ; the current sprite being drawn
-maxSprites      dc.b    8               ; the number of sprites to replicate
+moveAmount          dc.w    1
+scaleAmount         dc.w    1
+posX                dc.w    0
+posY                dc.w    0
+flip                dc.w    0
+scale               dc.w    100
+spriteCounter       dc.b    0           ; the current sprite being drawn
+maxSprites          dc.b    8           ; the number of sprites to replicate
 
 ; bresenham-line
-x               dc.w    0
-y               dc.w    0
-dx              dc.w    0
-dy              dc.w    0
-sx              dc.w    0
-sy              dc.w    0
+x                   dc.w    0
+y                   dc.w    0
+dx                  dc.w    0
+dy                  dc.w    0
+sx                  dc.w    0
+sy                  dc.w    0
 
 ; game
 systemTime          dc.l    0
@@ -60,3 +63,12 @@ digitCount          dc.b    0
 fontSize            dc.b    1           ; multiples of fontSize, 0=invalid, 1=normal, 2=larger...
 fontBold            dc.b    0           ; 0=normal, 1=bold
 
+;====================================================
+;=============== Text Display variables =============
+;====================================================
+cleanEnd            dc.b    '   ',0             ; space for the end of a string to cover anything left from before
+positionMessage     dc.b    'Position: ',0      ; the current x,y when positioning a sprite
+scaleMessage        dc.b    'Scale: ',0         ; the current scale when positioning a sprite
+flipMessage         dc.b    'Flip: ',0          ; the current flip when positioning a sprite
+spacer              dc.b    '   -   ',0         ; spacer between xy, scale and flip
+cycleMessage        dc.b    'Cycle count: ',0   ; DEBUG : the cycles for performance. Remove when game finished

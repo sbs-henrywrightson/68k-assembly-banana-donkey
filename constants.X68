@@ -41,13 +41,3 @@ MAX_BANANAS             equ     6           ; Maximum number of bananas, also th
                                             ;     sprite IDs : 0-5 : bananas (MAX_BANANAS in number)
                                             ;                    6 : monkey  (Same as MAX_BANANAS)
                                             ;                    7 : donkey  (one more than MAX_BANANAS)
-
-;====================================================
-;=============== Text Display variables =============
-;====================================================
-cleanEnd        dc.b    '   ',0             ; space for the end of a string to cover anything left from before
-positionMessage dc.b    'Position: ',0      ; the current x,y when positioning a sprite
-scaleMessage    dc.b    'Scale: ',0         ; the current scale when positioning a sprite
-flipMessage     dc.b    'Flip: ',0          ; the current flip when positioning a sprite
-spacer          dc.b    '   -   ',0         ; spacer between xy, scale and flip
-cycleMessage    dc.b    'Cycle count: ',0   ; DEBUG : the cycles for performance. Remove when game finished
