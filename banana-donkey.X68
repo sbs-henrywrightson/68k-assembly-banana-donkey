@@ -17,7 +17,9 @@ Start:
 
     jsr     InitialiseEnvironment
     jsr     GetSpriteSizes
-    jsr     Game
+
+    jsr     PlayGame
+    
     bra     Finish
 
     include 'game.X68'

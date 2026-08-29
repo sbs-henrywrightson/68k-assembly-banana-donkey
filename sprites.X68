@@ -49,6 +49,8 @@ GetSpriteSizes:
     rts 
 
 DrawSprite:
+    CacheRegisters
+
     moveq   #0,d2
     move.b  (a3)+,d2        ; loop counter
     subq    #1,d2
@@ -74,6 +76,7 @@ DrawSprite:
     
     dbra    d2,.PolygonLoop
     
+    RestoreRegisters
     rts
 
 ReadSpriteColour:
@@ -191,35 +194,35 @@ SaveDirtyRectangle:         ; save the colour of the pixels in the dirty rectang
 
     bsr     LoadDirtyBuffer
 
-    moveq   #0,d0           ; trap15-task
-    moveq   #0,d1           ; trap15-x
-    moveq   #0,d2           ; trap15-y
-    moveq   #0,d3           ; sprite-width-scaled
-    moveq   #0,d4           ; sprite-height-scaled
-    moveq   #0,d5           ; x-counter
-    moveq   #0,d6           ; y-counter
+    moveq   #0,d0               ; trap15-task
+    moveq   #0,d1               ; trap15-x
+    moveq   #0,d2               ; trap15-y
+    moveq   #0,d3               ; sprite-width-scaled
+    moveq   #0,d4               ; sprite-height-scaled
+    moveq   #0,d5               ; x-counter
+    moveq   #0,d6               ; y-counter
 
-    move.b  spriteSize,d0 ; width of sprite
+    move.b  spriteSize,d0       ; width of sprite
     bsr     ScaleNumber
     move.w  d0,d3
 
-    move.b  spriteSize+1,d0   ; height of sprite
+    move.b  spriteSize+1,d0     ; height of sprite
     bsr     ScaleNumber
     move.w  d0,d4
 
-    move.w  d4,d6           ; set y-counter to sprite-height-scaled
-.HeightLoop                 ; loop over the y-axis from high to low
-    move.w  d6,d2           ; set trap15-y to y-counter
-    add.w   spriteOrigin+2,d2 ; add the y-offset to trap15-y
-    move.l  d3,d5           ; reset the x-counter to sprite-width-scaled
-.WidthLoop                  ; loop over the x-axis from right to left
-    move.w  d5,d1           ; set trap15-x to x-counter
-    add.w   spriteOrigin,d1 ; add the x-offset to trap15-x
+    move.w  d4,d6               ; set y-counter to sprite-height-scaled
+.HeightLoop                     ; loop over the y-axis from high to low
+    move.w  d6,d2               ; set trap15-y to y-counter
+    add.w   spriteOrigin+2,d2   ; add the y-offset to trap15-y
+    move.l  d3,d5               ; reset the x-counter to sprite-width-scaled
+.WidthLoop                      ; loop over the x-axis from right to left
+    move.w  d5,d1               ; set trap15-x to x-counter
+    add.w   spriteOrigin,d1     ; add the x-offset to trap15-x
     
-    moveq   #83,d0          ; get the pixel colour of the pixel at trap15-x,trap15-y
+    moveq   #83,d0              ; get the pixel colour of the pixel at trap15-x,trap15-y
     trap    #15
 
-    move.l  d0,(a0)+        ; store the pixel in the buffer
+    move.l  d0,(a0)+            ; store the pixel in the buffer
     dbra    d5,.WidthLoop
     dbra    d6,.HeightLoop
 

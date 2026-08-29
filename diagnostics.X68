@@ -137,7 +137,7 @@ PositionSprite:
     jsr     DrawSceneSprites
 
 .MoveLoop:
-    SetSprite banana,bananaSpriteSize,#0,posX,posY,scale,flip
+    SetSprite monkey,monkeySpriteSize,#0,posX,posY,scale,flip
     jsr     SaveDirtyRectangle
     jsr     DrawSprite    
     bsr     OutputInfo
