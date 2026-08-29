@@ -16,7 +16,7 @@ PlayGame:
     jsr     ClearScreen
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
-    bsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
+    ;bsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
     bsr     OutputLanesText
     jsr     RepaintScreen
 
