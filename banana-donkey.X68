@@ -37,6 +37,7 @@ Finish:
     simhalt
 
     include 'variables.X68'
+    include 'fonts.X68'
     include 'buffers.X68'
 
     end     Start

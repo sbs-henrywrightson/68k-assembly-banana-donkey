@@ -16,7 +16,7 @@ PlayGame:
     jsr     ClearScreen
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
-    ;bsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
+    ;jsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
     bsr     OutputLanesText
     jsr     RepaintScreen
 
@@ -149,61 +149,6 @@ DrawSceneSprites:
     SetSprite seaFoam,seaFoamSpriteSize,#0,#395,#405,#100,#2
     jsr     DrawSprite
 
-    rts
-
-DrawGrid:
-    moveq   #31,d6
-
-.horizontalLoop:
-    move.l  #COLOUR_GREY,d1
-    jsr     SetPenColour
-    
-    ;draw lines across the screen for the bananas vertical movement
-    move.w  d6,d5
-    mulu    #10,d5
-
-    move.w  #0,d1
-    move.w  d5,d2
-    move.w  #RES_X,d3
-    move.w  d5,d4
-    jsr     DrawLine
-
-    SetFontSize #1,#0
-
-    move.w  #200,digitPlotX
-    move.w  d5,digitPlotY
-    addq    #5,digitPlotY
-    move.w  d6,d0
-    bsr     PlotNumber
-
-    move.w  #300,digitPlotX
-    move.w  d5,digitPlotY
-    addq    #5,digitPlotY
-    move.w  d6,d0
-    bsr     PlotNumber
-    
-    move.w  #400,digitPlotX
-    move.w  d5,digitPlotY
-    addq    #5,digitPlotY
-    move.w  d6,d0
-    bsr     PlotNumber
-
-    dbra    d6,.horizontalLoop
-
-    ;draw three lines for the three banana lanes
-    move.w  #200,d1
-    move.w  #0,d2
-    move.w  #200,d3
-    move.w  #RES_Y,d4
-    jsr     DrawLine
-
-    move.w  #300,d1
-    move.w  #300,d3
-    jsr     DrawLine
-
-    move.w  #400,d1
-    move.w  #400,d3
-    jsr     DrawLine
     rts
 
 InitialiseGame:

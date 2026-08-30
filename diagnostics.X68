@@ -32,19 +32,20 @@ DisplayCycleCounter:
 ;================= Sprite Diagnostics ===============
 ;====================================================
 PositionSprite:
-    move.w  #50,posX
-    move.w  #50,posY
-    move.w  #30,scale
+    move.w  #180,posX
+    move.w  #340,posY
+    move.w  #32,scale
     move.w  #0,flip
 
     jsr     ClearScreen
     jsr     DrawBackdrop
     jsr     DrawSceneSprites
+    ;bsr     DrawGrid
 
 .moveLoop:
-    SetSprite monkey,monkeySpriteSize,#0,posX,posY,scale,flip
+    SetSprite donkey,donkeySpriteSize,#0,posX,posY,scale,flip
     jsr     SaveDirtyRectangle
-    jsr     DrawSprite    
+    jsr     DrawSprite
     bsr     OutputInfo
     jsr     RepaintScreen
 
@@ -218,4 +219,59 @@ OutputInfo:
     lea     cleanEnd,a1
     trap    #15
     
+    rts
+
+DrawGrid:
+    moveq   #31,d6
+
+.horizontalLoop:
+    move.l  #COLOUR_GREY,d1
+    jsr     SetPenColour
+    
+    ;draw lines across the screen for the bananas vertical movement
+    move.w  d6,d5
+    mulu    #11,d5
+
+    move.w  #0,d1
+    move.w  d5,d2
+    move.w  #RES_X,d3
+    move.w  d5,d4
+    jsr     DrawLine
+
+    SetFontSize #1,#0
+
+    move.w  #200,digitPlotX
+    move.w  d5,digitPlotY
+    addq    #5,digitPlotY
+    move.w  d6,d0
+    bsr     PlotNumber
+
+    move.w  #300,digitPlotX
+    move.w  d5,digitPlotY
+    addq    #5,digitPlotY
+    move.w  d6,d0
+    bsr     PlotNumber
+    
+    move.w  #400,digitPlotX
+    move.w  d5,digitPlotY
+    addq    #5,digitPlotY
+    move.w  d6,d0
+    bsr     PlotNumber
+
+    dbra    d6,.horizontalLoop
+
+    ;draw three lines for the three banana lanes
+    move.w  #200,d1
+    move.w  #0,d2
+    move.w  #200,d3
+    move.w  #RES_Y,d4
+    jsr     DrawLine
+
+    move.w  #300,d1
+    move.w  #300,d3
+    jsr     DrawLine
+
+    move.w  #400,d1
+    move.w  #400,d3
+    jsr     DrawLine
     rts
