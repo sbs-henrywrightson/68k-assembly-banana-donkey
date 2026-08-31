@@ -18,25 +18,24 @@ PlayGame:
     bsr     DrawSceneSprites
     ;jsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
     bsr     OutputLanesText
+    bsr     InitialiseGame
     jsr     RepaintScreen
 
-    bsr     InitialiseGame
-
 .gameLoop:
-    moveq   #8,d0
+    moveq   #8,d0                       ; get the current system time
     trap    #15
     move.l  d1,systemTime
     
     move.l  systemTime,d0
     sub.l   bananaMoveTime,d0
-    cmp.l   #BANANA_MOVE_RATE,d0               ; is it time to move the bananas
-    blo     .skipMovement
+    cmp.l   #BANANA_MOVE_RATE,d0        ; is it time to move the bananas
+    blo     .skipMoveBananas
     bsr     MoveBananas
-.skipMovement:
+.skipMoveBananas:
 
     move.l  systemTime,d0
     sub.l   bananaThrowTime,d0
-    cmp.l   #BANANA_THROW_RATE,d0               ; is it time to throw a banana
+    cmp.l   #BANANA_THROW_RATE,d0       ; is it time to throw a banana
     blo     .skipThrow
     bsr     ThrowBanana
 .skipThrow:
@@ -80,7 +79,6 @@ DrawBackdrop:
     move.w  #650,d3                     ; x1
     move.w  #480,d4                     ; y1
     trap    #15
-
     rts
 
 DrawSceneSprites:
@@ -149,6 +147,9 @@ DrawSceneSprites:
     SetSprite seaFoam,seaFoamSpriteSize,#0,#395,#405,#100,#2
     jsr     DrawSprite
 
+    ; DONKEY   - DEBUG : this will eventually be a player controlled sprite
+    SetSprite donkey,donkeySpriteSize,#0,#200,#342,#30,#0
+    jsr     DrawSprite
     rts
 
 InitialiseGame:
@@ -156,17 +157,16 @@ InitialiseGame:
     trap    #15
 
     ; GENERAL
-    moveq   #8,d0           ; seed the random number generator with the current time
+    moveq   #8,d0                       ; seed the random number generator with the current time
     trap    #15
     move.l  d1,randomSeed
     eori.l  #$12345678,randomSeed
     move.w  #0,bananaCount
 
     ; MONKEY
-    move.w  #0,monkeyFlip
-    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyFlip
-    jsr     SaveDirtyRectangle
-    bsr     FlipMonkey
+    bset    #0,gameFlags                ; set the flip monkey flag
+    move.w  #0,monkeyOrientation
+    bsr     DrawMonkey
 
     ; BANANAS
     move.l  #0,bananaThrowTime
@@ -179,6 +179,9 @@ InitialiseGame:
     move.l  #0,oldLane1
     move.l  #0,oldLane2
     move.l  #0,oldLane3
+    lea     lane1Positions,a4
+    lea     lane2Positions,a5
+    lea     lane3Positions,a6
 
     ;          3322222222221111111111                   ; DEBUG : Remove
     ;          10987654321098765432109876543210         ; DEBUG : Remove
@@ -189,15 +192,27 @@ InitialiseGame:
 
     rts
 
-FlipMonkey:
-    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyFlip
+RemoveMonkey:
+    btst    #0,gameFlags
+    beq     .noFlip
+    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
     jsr     RestoreDirtyRectangle
+.noFlip
+    rts
 
-    eori.w  #1,monkeyFlip
-    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyFlip
+FlipMonkey:
+    btst    #0,gameFlags
+    beq     .noFlip
+    eori.w  #1,monkeyOrientation
+    bsr     DrawMonkey
+    bclr    #0,gameFlags
+.noFlip
+    rts
+
+DrawMonkey:
+    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
     jsr     SaveDirtyRectangle
     jsr     DrawSprite
-
     rts
 
 ThrowBanana:
@@ -236,9 +251,9 @@ ThrowBanana:
 
 .finally:
     addq    #1,bananaCount
+    bset    #0,gameFlags                ; flip the monkey
 
-    bsr     FlipMonkey
-    bsr     OutputLanesText     ; DEBUG : REMOVE
+    bsr     OutputLanesText             ; DEBUG : REMOVE
     bsr     RefreshLanes
     jsr     RepaintScreen
 .endEvent:
@@ -346,34 +361,43 @@ PrintBinary:                            ; print the long word in d0 as binary wi
 * d4 = banana Id
 * d5 = x-coord of banana
 * d6 = y-coord of banana
+* a1 = current lane positions
+* a4 = lane 1 positions
+* a5 = lane 2 positions
+* a6 = lane3 positions
 ******************************************************
 RefreshLanes:
     moveq   #0,d0
-    move.l  oldLane1,d0                 ; check to see if there are any bananas that need removing or displaying
+    move.l  oldLane1,d0
     add.l   oldLane2,d0
     add.l   oldLane3,d0
     add.l   lane1,d0
     add.l   lane2,d0
     add.l   lane3,d0
-    tst.l   d0
+    tst.l   d0                          ; check to see if there are any bananas that need removing or displaying
     beq     .finishRefresh
 
-    moveq   #2,d3                       ; d3 = 2=clear old banana, 1=save new banana, 0=display new banana
+    moveq   #2,d3                       ; refresh phase : 2=restore bananas dirty rect, 1=save bananas dirty rect, 0=display new banana
 
-.removeDisplayLoop:
+.refreshLoop:
     moveq   #2,d2                       ; d2 = lane number
     moveq   #0,d4                       ; d4 = banana Id
-.laneLoop:
-    moveq   #0,d5
-    moveq   #0,d6
     
+    cmpi.w  #1,d3                       ; don't flip monkey if we're not in the save phase
+    bne     .laneLoop
+    btst    #0,gameFlags                ; don't flip monkey if flip flag isn't set
+    beq     .laneLoop
+    bsr     RemoveMonkey                ; only flip monkey when in at start of save phase and flip flag is set
+    bsr     FlipMonkey
+
+.laneLoop:
     cmp.w   #0,d2
     beq     .chooseLane1
     cmp.w   #1,d2
     beq     .chooseLane2
     bra     .chooseLane3
 .chooseLane1:
-    move.w  #200,d5                     ;d5 = x-coord of banana in lane 1
+    movea.l a4,a1                       ; a1 = lane 1 Positions
     cmp.b   #2,d3
     beq     .removeLane1
     move.l  lane1,currentLane
@@ -382,7 +406,7 @@ RefreshLanes:
     move.l  oldLane1,currentLane
     bra     .laneSelected
 .chooseLane2:
-    move.w  #300,d5                     ;d5 = x-coord of banana in lane 2
+    movea.l a5,a1                       ; a1 = lane 2 Positions
     cmp.b   #2,d3
     beq     .removeLane2
     move.l  lane2,currentLane
@@ -391,7 +415,7 @@ RefreshLanes:
     move.l  oldLane2,currentLane
     bra     .laneSelected
 .chooseLane3:
-    move.w  #400,d5                     ;d5 = x-coord of banana in lane 3
+    movea.l a6,a1                       ; a1 = lane 3 Positions
     cmp.b   #2,d3
     beq     .removeLane3
     move.l  lane3,currentLane
@@ -407,8 +431,14 @@ RefreshLanes:
     btst    d1,d0                       ; check for a banana at position d1 in currentLane
     beq.s   .nextLanePosition
     
-    move.w  d1,d6                       ; d6 = y-coord of banana
-    mulu    #10,d6                      ; space between each banana position
+    moveq   #0,d5
+    moveq   #0,d6
+    moveq   #0,d0
+    move.w  d1,d0
+    lsl.w   #2,d0                       ; each x,y pair is 4 bytes apart so multiply by 4 to get the offset
+    move.w  (a1,d0.w),d5                ; d5 = x-coord of banana
+    add.w   #2,d0
+    move.w  (a1,d0.w),d6                ; d6 = y-coord of banana
     
     SetSprite banana,bananaSpriteSize,d4,d5,d6,#BANANA_SCALE,#0
     
@@ -430,7 +460,7 @@ RefreshLanes:
 .nextLanePosition:
     dbra    d1,.bananaLoop
     dbra    d2,.laneLoop
-    dbra    d3,.removeDisplayLoop
+    dbra    d3,.refreshLoop
 
     move.l  lane1,oldLane1              ; backup the lanes so the bananas can be removed when the lanes change
     move.l  lane2,oldLane2
@@ -438,8 +468,3 @@ RefreshLanes:
 
 .finishRefresh:
     rts
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~

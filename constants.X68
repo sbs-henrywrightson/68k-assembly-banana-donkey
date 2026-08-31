@@ -24,7 +24,7 @@ COLOUR_GREEN            equ     $339c0d     ; green
 COLOUR_BLUE             equ     $002ee6     ; blue
 
 ; polygon constants
-MAX_VERTICES            equ     22          ; the maximum number of vertices in a sprite polygone. Keep this EVEN
+MAX_VERTICES            equ     24          ; the maximum number of vertices in a sprite polygone. Keep this EVEN
 
 ; dirty rectangle buffer
 MAX_DIRTY_SPRITES       equ     8           ; total number of sprites that require buffer space for their dirty rectangle
