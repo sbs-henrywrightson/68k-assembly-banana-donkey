@@ -17,7 +17,7 @@ PlayGame:
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
     ;jsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
-    bsr     OutputLanesText
+    ;bsr     OutputLanesText
     bsr     InitialiseGame
     jsr     RepaintScreen
 
@@ -148,7 +148,7 @@ DrawSceneSprites:
     jsr     DrawSprite
 
     ; DONKEY   - DEBUG : this will eventually be a player controlled sprite
-    SetSprite donkey,donkeySpriteSize,#0,#200,#342,#30,#0
+    SetSprite donkey,donkeySpriteSize,#0,#200,#342,#35,#0
     jsr     DrawSprite
     rts
 
@@ -187,7 +187,7 @@ InitialiseGame:
     ;          10987654321098765432109876543210         ; DEBUG : Remove
     ;move.l  #%00010000000100000001000000010000,lane1   ; DEBUG : Remove
     ;move.w  #4,bananaCount                             ; DEBUG : Remove
-    ;bsr     RefreshLanes                               ; DEBUG : Remove
+    ;bsr     RenderLaneContents                         ; DEBUG : Remove
     ;jsr     RepaintScreen                              ; DEBUG : Remove
 
     rts
@@ -229,32 +229,32 @@ ThrowBanana:
     moveq   #3,d1
     jsr     RandomChance
     cmp.w   #1,d2
-    beq     .lane1
+    beq     .spawnLane1
     cmp.w   #2,d2
-    beq     .lane2
-    bra     .lane3
+    beq     .spawnLane2
+    bra     .spawnLane3
 
-.lane1:
+.spawnLane1:
     move.l  lane1,d0
     bset    #0,d0
     move.l  d0,lane1
-    bra     .finally
-.lane2:
+    bra     .spawnComplete
+.spawnLane2:
     move.l  lane2,d0
     bset    #0,d0
     move.l  d0,lane2
-    bra     .finally
-.lane3:
+    bra     .spawnComplete
+.spawnLane3:
     move.l  lane3,d0
     bset    #0,d0
     move.l  d0,lane3
 
-.finally:
+.spawnComplete:
     addq    #1,bananaCount
     bset    #0,gameFlags                ; flip the monkey
 
-    bsr     OutputLanesText             ; DEBUG : REMOVE
-    bsr     RefreshLanes
+    ;bsr     OutputLanesText             ; DEBUG : REMOVE
+    ;bsr     RenderLaneContents         ; DEBUG : REMOVE
     jsr     RepaintScreen
 .endEvent:
     rts
@@ -286,8 +286,8 @@ MoveBananas:
     lsl.l   #1,d0
     move.l  d0,lane3
     
-    bsr     OutputLanesText
-    bsr     RefreshLanes
+    ;bsr     OutputLanesText
+    bsr     RenderLaneContents
     jsr     RepaintScreen
     rts
 
@@ -300,17 +300,17 @@ OutputLanesText:
     trap    #15
 
     move.l  lane1,d0
-    jsr     PrintBinary
+    jsr     DisplayLaneMask
 
     move.l  lane2,d0
-    jsr     PrintBinary
+    jsr     DisplayLaneMask
 
     move.l  lane3,d0
-    jsr     PrintBinary
+    jsr     DisplayLaneMask
 
     rts
 
-PrintBinary:                            ; print the long word in d0 as binary with leading zeros
+DisplayLaneMask:                        ; print the long word in d0 as binary with leading zeros
     move.l  d0,d4
     moveq   #31,d3
 
@@ -352,7 +352,7 @@ PrintBinary:                            ; print the long word in d0 as binary wi
     rts
 
 ******************************************************
-* RefreshLanes register contract
+* RenderLaneContents register contract
 ******************************************************
 * d0 = scratch
 * d1 = current lane position
@@ -366,7 +366,7 @@ PrintBinary:                            ; print the long word in d0 as binary wi
 * a5 = lane 2 positions
 * a6 = lane3 positions
 ******************************************************
-RefreshLanes:
+RenderLaneContents:
     moveq   #0,d0
     move.l  oldLane1,d0
     add.l   oldLane2,d0
@@ -375,7 +375,7 @@ RefreshLanes:
     add.l   lane2,d0
     add.l   lane3,d0
     tst.l   d0                          ; check to see if there are any bananas that need removing or displaying
-    beq     .finishRefresh
+    beq     .complete
 
     moveq   #2,d3                       ; refresh phase : 2=restore bananas dirty rect, 1=save bananas dirty rect, 0=display new banana
 
@@ -392,11 +392,11 @@ RefreshLanes:
 
 .laneLoop:
     cmp.w   #0,d2
-    beq     .chooseLane1
+    beq     .selectLane1
     cmp.w   #1,d2
-    beq     .chooseLane2
-    bra     .chooseLane3
-.chooseLane1:
+    beq     .selectLane2
+    bra     .selectLane3
+.selectLane1:
     movea.l a4,a1                       ; a1 = lane 1 Positions
     cmp.b   #2,d3
     beq     .removeLane1
@@ -405,7 +405,7 @@ RefreshLanes:
 .removeLane1:
     move.l  oldLane1,currentLane
     bra     .laneSelected
-.chooseLane2:
+.selectLane2:
     movea.l a5,a1                       ; a1 = lane 2 Positions
     cmp.b   #2,d3
     beq     .removeLane2
@@ -414,7 +414,7 @@ RefreshLanes:
 .removeLane2:
     move.l  oldLane2,currentLane
     bra     .laneSelected
-.chooseLane3:
+.selectLane3:
     movea.l a6,a1                       ; a1 = lane 3 Positions
     cmp.b   #2,d3
     beq     .removeLane3
@@ -426,10 +426,10 @@ RefreshLanes:
 
 .laneSelected:
     moveq   #31,d1                      ; d1 = current lane position
-.bananaLoop:
+.bitLoop:
     move.l  currentLane,d0
     btst    d1,d0                       ; check for a banana at position d1 in currentLane
-    beq.s   .nextLanePosition
+    beq.s   .nextBit
     
     moveq   #0,d5
     moveq   #0,d6
@@ -450,15 +450,15 @@ RefreshLanes:
     beq     .displayBanana
 .removeBanana
     jsr     RestoreDirtyRectangle
-    bra     .nextLanePosition
+    bra     .nextBit
 .saveBanana:
     jsr     SaveDirtyRectangle
-    bra     .nextLanePosition
+    bra     .nextBit
 .displayBanana:
     jsr     DrawSprite
 
-.nextLanePosition:
-    dbra    d1,.bananaLoop
+.nextBit:
+    dbra    d1,.bitLoop
     dbra    d2,.laneLoop
     dbra    d3,.refreshLoop
 
@@ -466,5 +466,5 @@ RefreshLanes:
     move.l  lane2,oldLane2
     move.l  lane3,oldLane3
 
-.finishRefresh:
+.complete:
     rts

@@ -32,11 +32,11 @@ SPRITE_BUFFER_OFFSET    equ     40000       ; pixels in a sprite * 4 bytes per p
 
 ; game constants
 BANANA_THROW_RATE       equ     75          ; hundredths of a second
-BANANA_MOVE_RATE        equ     15          ; hundredths of a second
+BANANA_MOVE_RATE        equ     20          ; hundredths of a second
 BANANA_SCALE            equ     20          ; percentage of full size
 MONKEY_X                equ     490         ; the x-coord of the monkey
 MONKEY_Y                equ     90          ; the y-coord of the monkey
-MONKEY_SCALE            equ     35          ; percentage of full size
+MONKEY_SCALE            equ     30          ; percentage of full size
 MAX_BANANAS             equ     6           ; Maximum number of bananas, also the monkey sprite ID
                                             ;     sprite IDs : 0-5 : bananas (MAX_BANANAS in number)
                                             ;                    6 : monkey  (Same as MAX_BANANAS)
