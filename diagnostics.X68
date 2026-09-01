@@ -61,7 +61,7 @@ MoveSprite:
     bsr     SetSpriteFlip
 
     moveq   #19,d0
-    move.l  #$25<<24+$27<<16+$26<<8+$28,d1  ; check for keypress Left, Right, Up, Down    
+    move.l  #$25272628,d1  ; check for keypress Left, Right, Up, Down    
     trap    #15
 
     btst.l  #24,d1
@@ -128,7 +128,7 @@ SetScaleAmount:
 
 SetSpriteScale:
     moveq   #19,d0
-    move.l  #$6B<<8+$6D,d1  ; check for keypress + and -    
+    move.l  #$00006B6D,d1  ; check for keypress + and -    
     trap    #15
     
     btst.l  #8,d1

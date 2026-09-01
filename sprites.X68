@@ -127,7 +127,7 @@ FlipVertex:
 .noY:
     rts
 
-ClearSprite:
+BlankSprite:
     move.l  #COLOUR_GREEN,d1
     jsr     SetBackgroundColour
     

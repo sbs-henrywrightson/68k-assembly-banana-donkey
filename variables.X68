@@ -25,8 +25,9 @@ sy                  dc.w    0
 ; game
 systemTime          dc.l    0
 monkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
-bananaThrowTime     dc.l    0           ; the last time the banana event triggered
-bananaMoveTime      dc.l    0           ; the last time the lane event triggered
+bananaThrowTime     dc.l    0           ; the last time the a banana was thrown
+bananaMoveTime      dc.l    0           ; the last time the the bananas moved down the lanes
+donkeyMoveTime      dc.l    0           ; the last time the donkey moved
 bananaCount         dc.w    0           ; the number of bananas in the lanes
 currentLane         dc.l    0           ; the current lane being displayed
 lane1               dc.l    0           ; the first lane the bananas go down
@@ -35,8 +36,13 @@ lane3               dc.l    0           ; the third lane the bananas go down
 oldLane1            dc.l    0           ; the previous value of lane1
 oldLane2            dc.l    0           ; the previous value of lane2
 oldLane3            dc.l    0           ; the previous value of lane3
-gameFlags           dc.w    0           ; a bitmask of game event flags. bit 0 = flip monke
-
+donkeyX             dc.w    0           ; the x-coord of the donkey
+donkeyLane          dc.w    0           ; the lane the donkey is in. 0=lane1, 1=lane2, 2=lane3
+donkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
+gameFlags           dc.w    0           ; a bitmask of game event flags.
+                                        ;   bit 0 = flip monkey
+                                        ;   bit 1 = banana caught
+                                        ;   bit 2 = banana hit ground
 ; polygon
 scanLineMinY        dc.w    0
 scanLineMaxY        dc.w    0

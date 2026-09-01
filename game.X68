@@ -17,7 +17,7 @@ PlayGame:
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
     ;jsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
-    ;bsr     OutputLanesText
+    bsr     OutputDebugText
     bsr     InitialiseGame
     jsr     RepaintScreen
 
@@ -26,19 +26,24 @@ PlayGame:
     trap    #15
     move.l  d1,systemTime
     
+    ; MOVE BANANAS - is it time to move the bananas
     move.l  systemTime,d0
     sub.l   bananaMoveTime,d0
-    cmp.l   #BANANA_MOVE_RATE,d0        ; is it time to move the bananas
+    cmp.l   #BANANA_MOVE_INTERVAL,d0
     blo     .skipMoveBananas
     bsr     MoveBananas
 .skipMoveBananas:
 
+    ; THROW BANANA - is it time to throw a banana
     move.l  systemTime,d0
     sub.l   bananaThrowTime,d0
-    cmp.l   #BANANA_THROW_RATE,d0       ; is it time to throw a banana
+    cmp.l   #BANANA_THROW_INTERVAL,d0       ; is it time to throw a banana
     blo     .skipThrow
     bsr     ThrowBanana
 .skipThrow:
+
+    ; MOVE DONKEY - always poll the keyboard to see if the donkey should move
+    bsr     MoveDonkey
 
     bra     .gameLoop
     rts
@@ -147,9 +152,6 @@ DrawSceneSprites:
     SetSprite seaFoam,seaFoamSpriteSize,#0,#395,#405,#100,#2
     jsr     DrawSprite
 
-    ; DONKEY   - DEBUG : this will eventually be a player controlled sprite
-    SetSprite donkey,donkeySpriteSize,#0,#200,#342,#35,#0
-    jsr     DrawSprite
     rts
 
 InitialiseGame:
@@ -168,7 +170,14 @@ InitialiseGame:
     move.w  #0,monkeyOrientation
     bsr     DrawMonkey
 
-    ; BANANAS
+    ; DONKEY
+    move.w  #1,donkeyLane
+    move.w  #DONKEY_LANE2_X,d0
+    move.w  d0,donkeyX
+    move.w  #0,donkeyOrientation
+    bsr     DisplayDonkey
+
+    ;        BANANAS
     move.l  #0,bananaThrowTime
 
     ; LANES
@@ -231,8 +240,8 @@ ThrowBanana:
     cmp.w   #1,d2
     beq     .spawnLane1
     cmp.w   #2,d2
-    beq     .spawnLane2
-    bra     .spawnLane3
+    beq     .spawnLane1
+    bra     .spawnLane1
 
 .spawnLane1:
     move.l  lane1,d0
@@ -253,7 +262,7 @@ ThrowBanana:
     addq    #1,bananaCount
     bset    #0,gameFlags                ; flip the monkey
 
-    ;bsr     OutputLanesText             ; DEBUG : REMOVE
+    bsr     OutputDebugText             ; DEBUG : REMOVE
     ;bsr     RenderLaneContents         ; DEBUG : REMOVE
     jsr     RepaintScreen
 .endEvent:
@@ -262,10 +271,14 @@ ThrowBanana:
 MoveBananas:
     move.l  systemTime,bananaMoveTime
 
+    bclr    #1,gameFlags                ; clear the caught banana flag
+    bclr    #2,gameFlags                ; clear the banana hit ground flag
+
     move.l  lane1,d0
     btst    #31,d0
     beq     .shiftLane1
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
+    bset    #2,gameFlags                ; set the banana hit ground flag
 .shiftLane1:
     lsl.l   #1,d0
     move.l  d0,lane1
@@ -274,6 +287,7 @@ MoveBananas:
     btst    #31,d0
     beq     .shiftLane2
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
+    bset    #2,gameFlags                ; set the banana hit ground flag
 .shiftLane2:
     lsl.l   #1,d0
     move.l  d0,lane2
@@ -282,16 +296,125 @@ MoveBananas:
     btst    #31,d0
     beq     .shiftLane3
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
+    bset    #2,gameFlags                ; set the banana hit ground flag
 .shiftLane3:
     lsl.l   #1,d0
     move.l  d0,lane3
-    
-    ;bsr     OutputLanesText
+
+    bsr     BananaCatchCheck
+
+    bsr     OutputDebugText             ; DEBUG : REMOVE
+
+    btst    #1,gameFlags                ; has the donkey caught a banana
+    bne     .donkeyCollision
+    btst    #2,gameFlags                ; has a banana hit the ground
+    bne     .donkeyCollision
+    bsr     RenderLaneContents          ; banana/donkey collision hasn't occurred so just render the lane contents
+    bra     .moveComplete
+.donkeyCollision
+    bsr     RemoveDonkey                ; banana/donkey collision has occurred so remove the donkey  before rendering the lane contents
     bsr     RenderLaneContents
+    bsr     DisplayDonkey
+.moveComplete
     jsr     RepaintScreen
+
     rts
 
-OutputLanesText:
+MoveDonkey:
+    move.l  systemTime,d0
+    sub.l   donkeyMoveTime,d0           ; debounce this event to prevent the donkey from moving too fast
+    cmp.l   #DONKEY_MOVE_INTERVAL,d0    ; has it been long enough since the last donkey move to poll the keyboard again
+    blo     .finishedMoving
+
+    moveq   #19,d0
+    move.l  #$00002527,d1  ; check for keypress Cursor Left, Cursor Right
+    trap    #15
+
+    move.w  donkeyLane,d0
+
+    btst.l  #8,d1
+    bne     .left
+
+    btst.l  #0,d1
+    bne     .right
+    rts
+
+.left:
+    cmp.w   #0,d0                       ; if donkey is in lane 1, don't move left
+    beq     .finishedMoving
+    sub.w   #1,d0
+    bra     .move
+.right:
+    cmp.w   #2,d0                       ; if donkey is in lane 3, don't move right
+    beq     .finishedMoving
+    add.w   #1,d0
+
+.move:
+    bsr     RemoveDonkey
+    move.w  d0,donkeyLane
+    bsr     DisplayDonkey
+    move.l  systemTime,donkeyMoveTime
+
+.finishedMoving
+    rts
+
+
+RemoveDonkey:
+    SetSprite donkey,donkeySpriteSize,#MAX_BANANAS+1,donkeyX,#DONKEY_Y,#DONKEY_SCALE,donkeyOrientation
+    jsr     RestoreDirtyRectangle
+    rts
+
+DisplayDonkey:
+    cmp.w   #0,donkeyLane
+    beq     .setLane1
+    cmp.w   #1,donkeyLane
+    beq     .setLane2
+    bra     .setLane3
+.setLane1
+    move.w  #DONKEY_LANE1_X,d0
+    bra     .display
+.setLane2
+    move.w  #DONKEY_LANE2_X,d0
+    bra     .display
+.setLane3
+    move.w  #DONKEY_LANE3_X,d0
+.display
+    move.w  d0,donkeyX
+    bsr     PlotDonkey
+    rts
+
+PlotDonkey:
+    SetSprite donkey,donkeySpriteSize,#MAX_BANANAS+1,donkeyX,#DONKEY_Y,#DONKEY_SCALE,donkeyOrientation
+    jsr     SaveDirtyRectangle
+    jsr     DrawSprite
+    rts
+
+BananaCatchCheck:
+    move.w  donkeyLane,d0
+    cmp.w   #0,d0
+    beq     .checkLane1
+    cmp.w   #1,d0
+    beq     .checkLane2
+    bra     .checkLane3
+
+.checkLane1:
+    move.l  lane1,d1
+    bra     .checkBits
+.checkLane2:
+    move.l  lane2,d1
+    bra     .checkBits
+.checkLane3:
+    move.l  lane3,d1
+
+.checkBits:
+    andi.l  #$C0000000,d1
+    beq     .endChecks                  ; last two bits are clear
+    bset    #1,gameFlags                ; set the banana/donkey collision flag as one of the last two bits is set
+
+.endChecks:
+    rts
+
+OutputDebugText:
     move.l  #COLOUR_WHITE,d1
     jsr     SetPenColour
 
@@ -299,14 +422,31 @@ OutputLanesText:
     move.w  #$001c,d1
     trap    #15
 
+    moveq   #0,d5
     move.l  lane1,d0
+    cmp.w   #0,donkeyLane
+    bne     .displayLane1
+    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
+.displayLane1
     jsr     DisplayLaneMask
 
+    moveq   #0,d5
     move.l  lane2,d0
+    cmp.w   #1,donkeyLane
+    bne     .displayLane2
+    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
+.displayLane2
     jsr     DisplayLaneMask
 
+    moveq   #0,d5
     move.l  lane3,d0
+    cmp.w   #2,donkeyLane
+    bne     .displayLane3
+    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
+.displayLane3
     jsr     DisplayLaneMask
+
+    bsr     DisplayGameFlags
 
     rts
 
@@ -316,9 +456,15 @@ DisplayLaneMask:                        ; print the long word in d0 as binary wi
 
 .loop:
     btst    d3,d4
-    beq.s   .noBit
+    beq     .noBit
 
     move.l  #COLOUR_RED,d1
+    cmp.b   #1,d5
+    bne     .setBackground
+    btst    #1,gameFlags
+    beq     .setBackground
+    move.l  #COLOUR_GREEN,d1
+.setBackground
     jsr     SetBackgroundColour
 
     moveq   #6,d0
@@ -351,6 +497,24 @@ DisplayLaneMask:                        ; print the long word in d0 as binary wi
     trap    #15
     rts
 
+DisplayGameFlags:
+    moveq   #11,d0
+    move.w  #$321c,d1                   ; position at 50,28
+    trap    #15
+
+    move.b  gameFlags,d2
+    moveq   #7,d3
+.bitLoop:
+    moveq   #'0',d1
+    btst    d3,d2
+    beq.s   .outputBit
+    moveq   #'1',d1
+.outputBit
+    moveq   #6,d0
+    trap    #15
+    dbra    d3,.bitLoop
+    rts
+
 ******************************************************
 * RenderLaneContents register contract
 ******************************************************
@@ -364,7 +528,7 @@ DisplayLaneMask:                        ; print the long word in d0 as binary wi
 * a1 = current lane positions
 * a4 = lane 1 positions
 * a5 = lane 2 positions
-* a6 = lane3 positions
+* a6 = lane 3 positions
 ******************************************************
 RenderLaneContents:
     moveq   #0,d0

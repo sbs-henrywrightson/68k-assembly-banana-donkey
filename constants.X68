@@ -22,6 +22,7 @@ COLOUR_GREY             equ     $7a7a7a
 COLOUR_RED              equ     $ff0000     ; red
 COLOUR_GREEN            equ     $339c0d     ; green
 COLOUR_BLUE             equ     $002ee6     ; blue
+COLOUR_YELLOW           equ     $ffff00     ; yellow
 
 ; polygon constants
 MAX_VERTICES            equ     24          ; the maximum number of vertices in a sprite polygone. Keep this EVEN
@@ -31,8 +32,9 @@ MAX_DIRTY_SPRITES       equ     8           ; total number of sprites that requi
 SPRITE_BUFFER_OFFSET    equ     40000       ; pixels in a sprite * 4 bytes per pixel, 100*100 * 4
 
 ; game constants
-BANANA_THROW_RATE       equ     75          ; hundredths of a second
-BANANA_MOVE_RATE        equ     20          ; hundredths of a second
+BANANA_THROW_INTERVAL   equ     75          ; hundredths of a second
+BANANA_MOVE_INTERVAL    equ     20          ; hundredths of a second
+DONKEY_MOVE_INTERVAL    equ     15           ; hundredths of a second
 BANANA_SCALE            equ     20          ; percentage of full size
 MONKEY_X                equ     490         ; the x-coord of the monkey
 MONKEY_Y                equ     90          ; the y-coord of the monkey
@@ -41,3 +43,8 @@ MAX_BANANAS             equ     6           ; Maximum number of bananas, also th
                                             ;     sprite IDs : 0-5 : bananas (MAX_BANANAS in number)
                                             ;                    6 : monkey  (Same as MAX_BANANAS)
                                             ;                    7 : donkey  (one more than MAX_BANANAS)
+DONKEY_Y                equ     323         ; the y-coord of the donkey
+DONKEY_SCALE            equ     30          ; percentage of full size
+DONKEY_LANE1_X          equ     170         ; the x-coord of the donkey when in lane 1
+DONKEY_LANE2_X          equ     270         ; the x-coord of the donkey when in lane 2
+DONKEY_LANE3_X          equ     370         ; the x-coord of the donkey when in lane 3
