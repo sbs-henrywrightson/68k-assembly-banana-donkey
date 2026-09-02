@@ -10,7 +10,9 @@
 *-----------------------------------------------------------
 
 ;====================================================
-;=============== Bresenham Line buffers =============
+;===                                              ===
+;===             Bresenham Line buffers           ===
+;===                                              ===
 ;====================================================
 scanLineLeft:    
     ds.w    RES_Y           ; the start positions of the scan-lines needed to make the filled polygon. The offset is the y and the value is the x
@@ -21,14 +23,18 @@ scanLineRight:
     ds.l    4               ; spacer
 
 ;====================================================
-;=================== Sprite buffers =================
+;===                                              ===
+;===                 Sprite buffers               ===
+;===                                              ===
 ;====================================================
 dirtyRectangleBuffer:
     ds.l    MAX_DIRTY_SPRITES*SPRITE_BUFFER_OFFSET
     ds.l    4               ; spacer
 
 ;====================================================
-;================== Polygon buffers =================
+;===                                              ===
+;===                Polygon buffers               ===
+;===                                              ===
 ;====================================================
 ; the points in a polygon as $xxxxyyyy. the first word is the number of vertices in the polygon
 vertices:
@@ -37,7 +43,9 @@ vertices:
     ds.l    4               ; spacer
 
 ;====================================================
-;=================== Digit buffers ==================
+;===                                              ===
+;===                 Digit buffers                ===
+;===                                              ===
 ;====================================================
 ; the digit buffer is used to write a number in backwards so it can be read one digit at a time from left to right
 digitBuffer:    

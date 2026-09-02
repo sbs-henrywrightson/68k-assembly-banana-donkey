@@ -1,8 +1,18 @@
-;===================================================
-;==================== Variables ====================
-;===================================================
+*-----------------------------------------------------------
+* Title      : variables
+* Written by : Henry Wrightson
+* Date       : 16/8/2026
+* Type       : Include file
+* Depends on : 
+* Description: Variables that the main program depends on
+*            : Don't forget to keep the byte count even
+*-----------------------------------------------------------
 
-; Try to keep the number of byte variables EVEN
+;====================================================
+;===                                              ===
+;===                  Variables                   ===
+;===                                              ===
+;====================================================
 
 ; diagnostics
 moveAmount          dc.w    1
@@ -71,21 +81,21 @@ digitCount          dc.b    0
 fontSize            dc.b    1           ; multiples of fontSize, 0=invalid, 1=normal, 2=larger...
 fontBold            dc.b    0           ; 0=normal, 1=bold
 
-;====================================================
-;=============== Text Display variables =============
-;====================================================
+; text display
 cleanEnd            dc.b    '   ',0             ; space for the end of a string to cover anything left from before
 positionMessage     dc.b    'Position: ',0      ; the current x,y when positioning a sprite
 scaleMessage        dc.b    'Scale: ',0         ; the current scale when positioning a sprite
 flipMessage         dc.b    'Flip: ',0          ; the current flip when positioning a sprite
 spacer              dc.b    '   -   ',0         ; spacer between xy, scale and flip
 cycleMessage        dc.b    'Cycle count: ',0   ; DEBUG : the cycles for performance. Remove when game finished
+;====================================================
+;===                                              ===
+;===       KEEP THE BYTE COUNT EVEN! INCLUDE      ===
+;===       THE NULL TERMINATOR IN YOUR COUNT      ===
+;===                                              ===
+;====================================================
 
-;====================================================
-;================ Sound Paths variables =============
-;====================================================
-; path lengths + path variable count should be EVEN
-; if not, add a character to the fillerPath
+; sound paths
 squelchFilePath     dc.b    'sounds\squelch.wav',0
 scrumpleFilePath    dc.b    'sounds\scrumple.wav',0
 monkey1FilePath     dc.b    'sounds\monkey-1.wav',0
@@ -95,10 +105,14 @@ monkey4FilePath     dc.b    'sounds\monkey-4.wav',0
 monkey5FilePath     dc.b    'sounds\monkey-5.wav',0
 monkey6FilePath     dc.b    'sounds\monkey-6.wav',0
 fillerPath          dc.b    '',0
+;====================================================
+;===                                              ===
+;===       KEEP THE BYTE COUNT EVEN! INCLUDE      ===
+;===       THE NULL TERMINATOR IN YOUR COUNT      ===
+;===                                              ===
+;====================================================
 
-;====================================================
-;==================== Lane Positions ===============
-;====================================================
+; lane positions
 lane1Positions:
     dc.w    490,90
     dc.w    480,75

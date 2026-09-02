@@ -8,7 +8,9 @@
 *-----------------------------------------------------------
 
 ;====================================================
-;===================== Constants ====================
+;===                                              ===
+;===                  Constants                   ===
+;===                                              ===
 ;====================================================
 ; graphics constants
 RES_X                   equ     650         ; width of screen in pixels
@@ -51,7 +53,9 @@ DONKEY_LANE2_X          equ     285         ; the x-coord of the donkey when in 
 DONKEY_LANE3_X          equ     385         ; the x-coord of the donkey when in lane 3
 
 ;====================================================
-;================== Sound Constants =================
+;===                                              ===
+;===                Sound Constants               ===
+;===                                              ===
 ;====================================================
 SQUELCH_SOUND_ID        equ     0
 SCRUMPLE_SOUND_ID       equ     1

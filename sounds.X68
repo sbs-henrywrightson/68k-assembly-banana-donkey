@@ -7,6 +7,12 @@
 * Description: Load the sound files into memory
 *-----------------------------------------------------------
 
+;====================================================
+;===                                              ===
+;===              Sound Sub-routines              ===
+;===                                              ===
+;====================================================
+
 LoadSounds:                             ; load all the sound files into memory
     lea     squelchFilePath,a1
     moveq   #71,d0
