@@ -1,0 +1,4 @@
+RunTool:
+    bsr     CreateBananaLaneCurves
+
+    rts

@@ -82,6 +82,7 @@ hillLeft:
     dc.b       105,8,                                                   $ff,$e0,$6f, $ff,$d6,$3f   ; hill 1
     dc.b    9, 0,39,  74,14,  101,0,  105,7,  101,13, 93,18, 92,26
     dc.b       100,32, 117,39,                                          $ff,$d7,$44, $ff,$b9,$00   ; hill 2
+    dc.b    0   ; EVEN the byte size
 hillLeftSpriteSize dc.w $0000    ; $wwhh
 
 hillRight:
@@ -90,6 +91,7 @@ hillRight:
     dc.b       105,8,                                                   $ff,$e0,$6f, $ff,$d6,$3f   ; hill 1
     dc.b    9, 0,39,  74,14,  101,0,  105,7,  101,13, 93,18, 92,26
     dc.b       100,32, 117,39,                                          $ff,$d7,$44, $ff,$b9,$00   ; hill 2
+    dc.b    0   ; EVEN the byte size
 hillRightSpriteSize dc.w $0000    ; $wwhh
 
 donkey:

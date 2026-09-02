@@ -15,7 +15,8 @@
 
 Start:
 
-    jsr     InitialiseEnvironment
+    jsr     InitialiseGraphics
+    jsr     LoadSounds
     jsr     GetSpriteSizes
 
     jsr     PlayGame
@@ -25,6 +26,7 @@ Start:
     include 'game.X68'
     include 'core.X68'
     
+    include 'sounds.X68'
     include 'graphics.X68'
     include 'sprites.X68'
     include 'polygons.X68'

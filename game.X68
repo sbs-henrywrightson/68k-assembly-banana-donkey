@@ -240,8 +240,8 @@ ThrowBanana:
     cmp.w   #1,d2
     beq     .spawnLane1
     cmp.w   #2,d2
-    beq     .spawnLane1
-    bra     .spawnLane1
+    beq     .spawnLane2
+    bra     .spawnLane3
 
 .spawnLane1:
     move.l  lane1,d0
@@ -264,6 +264,7 @@ ThrowBanana:
 
     bsr     OutputDebugText             ; DEBUG : REMOVE
     ;bsr     RenderLaneContents         ; DEBUG : REMOVE
+    jsr     PlayThrowSound
     jsr     RepaintScreen
 .endEvent:
     rts
@@ -271,7 +272,7 @@ ThrowBanana:
 MoveBananas:
     move.l  systemTime,bananaMoveTime
 
-    bclr    #1,gameFlags                ; clear the caught banana flag
+    bclr    #1,gameFlags                ; clear the banana/donkey collision flag
     bclr    #2,gameFlags                ; clear the banana hit ground flag
 
     move.l  lane1,d0
@@ -301,21 +302,28 @@ MoveBananas:
     lsl.l   #1,d0
     move.l  d0,lane3
 
+    bsr     BananaCollisionCheck
     bsr     BananaCatchCheck
 
     bsr     OutputDebugText             ; DEBUG : REMOVE
 
-    btst    #1,gameFlags                ; has the donkey caught a banana
+    btst    #1,gameFlags                ; has the banana collided with the donkey
     bne     .donkeyCollision
     btst    #2,gameFlags                ; has a banana hit the ground
     bne     .donkeyCollision
     bsr     RenderLaneContents          ; banana/donkey collision hasn't occurred so just render the lane contents
     bra     .moveComplete
 .donkeyCollision
-    bsr     RemoveDonkey                ; banana/donkey collision has occurred so remove the donkey  before rendering the lane contents
+    bsr     RemoveDonkey                ; banana/donkey collision has occurred so remove the donkey before rendering the lane contents
     bsr     RenderLaneContents
     bsr     DisplayDonkey
+
 .moveComplete
+    btst    #2,gameFlags                ; has a banana been dropped
+    beq     .finished
+    jsr     PlayDropSound
+
+.finished
     jsr     RepaintScreen
 
     rts
@@ -389,7 +397,7 @@ PlotDonkey:
     jsr     DrawSprite
     rts
 
-BananaCatchCheck:
+BananaCollisionCheck:
     move.w  donkeyLane,d0
     cmp.w   #0,d0
     beq     .checkLane1
@@ -407,11 +415,52 @@ BananaCatchCheck:
     move.l  lane3,d1
 
 .checkBits:
-    andi.l  #$C0000000,d1
-    beq     .endChecks                  ; last two bits are clear
-    bset    #1,gameFlags                ; set the banana/donkey collision flag as one of the last two bits is set
+    andi.l  #$E0000000,d1               ; check the last three bits of the lane
+    beq     .endChecks                  ; if they're all clear don't do anything
+    bset    #1,gameFlags                ; set the banana/donkey collision flag
 
 .endChecks:
+    rts
+
+BananaCatchCheck:
+    move.w  donkeyLane,d0
+    cmp.w   #0,d0
+    beq     .checkLane1
+    cmp.w   #1,d0
+    beq     .checkLane2
+    bra     .checkLane3
+
+.checkLane1:
+    move.l  lane1,d1
+    bsr     ClearCaughtBananas
+    move.l  d1,lane1
+    bra     .endChecks
+.checkLane2:
+    move.l  lane2,d1
+    bsr     ClearCaughtBananas
+    move.l  d1,lane2
+    bra     .endChecks
+.checkLane3:
+    move.l  lane3,d1
+    bsr     ClearCaughtBananas
+    move.l  d1,lane3
+
+.endChecks:
+    rts
+
+ClearCaughtBananas:                     ; remove the bananas that have been caught by the donkey
+    btst    #30,d1
+    beq     .bit31                      ; if the bit is clear check the next bit
+    bclr    #30,d1
+    subq    #1,bananaCount
+    jsr     PlayCatchSound
+.bit31:
+    btst    #31,d1
+    beq     .finished                   ; if the bit is clear finish with the checks
+    bclr    #31,d1
+    subq    #1,bananaCount
+    jsr     PlayCatchSound
+.finished:
     rts
 
 OutputDebugText:
@@ -447,6 +496,7 @@ OutputDebugText:
     jsr     DisplayLaneMask
 
     bsr     DisplayGameFlags
+    bsr     DisplayBananaCount
 
     rts
 
@@ -513,6 +563,17 @@ DisplayGameFlags:
     moveq   #6,d0
     trap    #15
     dbra    d3,.bitLoop
+    rts
+
+DisplayBananaCount:
+    moveq   #11,d0
+    move.w  #$3c1c,d1                   ; position at 60,28
+    trap    #15
+
+    moveq   #15,d0
+    move.w  bananaCount,d1
+    moveq   #10,d2
+    trap    #15
     rts
 
 ******************************************************

@@ -28,6 +28,7 @@ monkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
 bananaThrowTime     dc.l    0           ; the last time the a banana was thrown
 bananaMoveTime      dc.l    0           ; the last time the the bananas moved down the lanes
 donkeyMoveTime      dc.l    0           ; the last time the donkey moved
+playSoundTime       dc.l    0           ; the last time a sound was played
 bananaCount         dc.w    0           ; the number of bananas in the lanes
 currentLane         dc.l    0           ; the current lane being displayed
 lane1               dc.l    0           ; the first lane the bananas go down
@@ -41,7 +42,7 @@ donkeyLane          dc.w    0           ; the lane the donkey is in. 0=lane1, 1=
 donkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
 gameFlags           dc.w    0           ; a bitmask of game event flags.
                                         ;   bit 0 = flip monkey
-                                        ;   bit 1 = banana caught
+                                        ;   bit 1 = banana/donkey collision
                                         ;   bit 2 = banana hit ground
 ; polygon
 scanLineMinY        dc.w    0
@@ -79,6 +80,21 @@ scaleMessage        dc.b    'Scale: ',0         ; the current scale when positio
 flipMessage         dc.b    'Flip: ',0          ; the current flip when positioning a sprite
 spacer              dc.b    '   -   ',0         ; spacer between xy, scale and flip
 cycleMessage        dc.b    'Cycle count: ',0   ; DEBUG : the cycles for performance. Remove when game finished
+
+;====================================================
+;================ Sound Paths variables =============
+;====================================================
+; path lengths + path variable count should be EVEN
+; if not, add a character to the fillerPath
+squelchFilePath     dc.b    'sounds\squelch.wav',0
+scrumpleFilePath    dc.b    'sounds\scrumple.wav',0
+monkey1FilePath     dc.b    'sounds\monkey-1.wav',0
+monkey2FilePath     dc.b    'sounds\monkey-2.wav',0
+monkey3FilePath     dc.b    'sounds\monkey-3.wav',0
+monkey4FilePath     dc.b    'sounds\monkey-4.wav',0
+monkey5FilePath     dc.b    'sounds\monkey-5.wav',0
+monkey6FilePath     dc.b    'sounds\monkey-6.wav',0
+fillerPath          dc.b    '',0
 
 ;====================================================
 ;==================== Lane Positions ===============

@@ -11,7 +11,7 @@
 ;====================================================
 ;=============== Graphics Sub-routines ==============
 ;====================================================
-InitialiseEnvironment:          ; set the output window
+InitialiseGraphics:          ; set the output window
     bsr     SetScreenResolution
     bsr     SetDoubleBufferMode
     bsr     ClearScreen

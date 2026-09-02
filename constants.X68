@@ -32,9 +32,10 @@ MAX_DIRTY_SPRITES       equ     8           ; total number of sprites that requi
 SPRITE_BUFFER_OFFSET    equ     40000       ; pixels in a sprite * 4 bytes per pixel, 100*100 * 4
 
 ; game constants
-BANANA_THROW_INTERVAL   equ     75          ; hundredths of a second
-BANANA_MOVE_INTERVAL    equ     20          ; hundredths of a second
-DONKEY_MOVE_INTERVAL    equ     15           ; hundredths of a second
+BANANA_THROW_INTERVAL   equ     40          ; hundredths of a second
+BANANA_MOVE_INTERVAL    equ     10          ; hundredths of a second
+DONKEY_MOVE_INTERVAL    equ     10          ; hundredths of a second
+PLAY_SOUND_INTERVAL     equ     50          ; hundredths of a second
 BANANA_SCALE            equ     20          ; percentage of full size
 MONKEY_X                equ     490         ; the x-coord of the monkey
 MONKEY_Y                equ     90          ; the y-coord of the monkey
@@ -45,6 +46,18 @@ MAX_BANANAS             equ     6           ; Maximum number of bananas, also th
                                             ;                    7 : donkey  (one more than MAX_BANANAS)
 DONKEY_Y                equ     323         ; the y-coord of the donkey
 DONKEY_SCALE            equ     30          ; percentage of full size
-DONKEY_LANE1_X          equ     170         ; the x-coord of the donkey when in lane 1
-DONKEY_LANE2_X          equ     270         ; the x-coord of the donkey when in lane 2
-DONKEY_LANE3_X          equ     370         ; the x-coord of the donkey when in lane 3
+DONKEY_LANE1_X          equ     185         ; the x-coord of the donkey when in lane 1
+DONKEY_LANE2_X          equ     285         ; the x-coord of the donkey when in lane 2
+DONKEY_LANE3_X          equ     385         ; the x-coord of the donkey when in lane 3
+
+;====================================================
+;================== Sound Constants =================
+;====================================================
+SQUELCH_SOUND_ID        equ     0
+SCRUMPLE_SOUND_ID       equ     1
+MONKEY_1_SOUND_ID       equ     2
+MONKEY_2_SOUND_ID       equ     3
+MONKEY_3_SOUND_ID       equ     4
+MONKEY_4_SOUND_ID       equ     5
+MONKEY_5_SOUND_ID       equ     6
+MONKEY_6_SOUND_ID       equ     7
