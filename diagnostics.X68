@@ -242,7 +242,7 @@ DrawGrid:
     move.w  d5,d4
     jsr     DrawLine
 
-    SetFontSize #1,#0
+    SetFont digitsFont,#DIGIT_FONT_HEIGHT,#1,#0
 
     move.w  #200,digitPlotX
     move.w  d5,digitPlotY

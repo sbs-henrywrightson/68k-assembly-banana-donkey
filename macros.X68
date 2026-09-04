@@ -22,9 +22,20 @@ SetSprite macro                 ; 1=sprite, 2=spriteSize, 3=spriteDBNumber, 4=x,
     move.w  \7,spriteFlip
     endm
 
-SetFontSize macro               ; 1=size, 2=bold
-    move.b  \1,fontSize
-    move.b  \2,fontBold
+SetOverlay macro                 ; 1=overlay number, 2=x, 3=y, 4=width, 5=height
+    move.w  #(OVERLAY_DB_NUMBER+\1),spriteDBNumber
+    move.w  \2,spriteOrigin
+    move.w  \3,spriteOrigin+2
+    move.b  \4,spriteSize
+    move.b  \5,spriteSize+1
+    move.w  #100,spriteScale
+    endm
+
+SetFont macro               ; 1=font, 2=font height, 3=size, 4=bold
+    lea     \1,a1
+    move.b  \2,characterHeight
+    move.b  \3,fontSize
+    move.b  \4,fontBold
     endm
 
 CacheRegisters macro

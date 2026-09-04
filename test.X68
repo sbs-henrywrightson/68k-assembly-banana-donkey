@@ -1,40 +1,29 @@
 *-----------------------------------------------------------
-* Title      : banana-donkey
-* Written by : Henry Wrightson
-* Date       : 16/8/2026
+* Title      :
+* Written by :
+* Date       :
 * Type       : Program file
 * Depends on : 
-* Description: The main program file that includes all the
-*            : required files and starts the game
+* Description:
 *-----------------------------------------------------------
     org     $1000
-    
+
     include 'constants.X68'
     include 'macros.X68'
     include 'sprite-data.X68'
 
 Start:
 
-    jsr     InitialiseGraphics
-    jsr     LoadSounds
-    jsr     GetSpriteSizes
-
-    jsr     PlayGame
-    
     bra     Finish
 
-    include 'game.X68'
+    include 'font-renderer.X68'
     include 'core.X68'
     include 'trap-fifteen.X68'
     
-    include 'sounds.X68'
     include 'graphics.X68'
     include 'sprites.X68'
     include 'polygons.X68'
     include 'bresenham-line.X68'
-
-    include 'diagnostics.X68'
-    
 
 Finish:
     simhalt

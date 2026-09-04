@@ -58,9 +58,6 @@ gameFlags           dc.w    0           ; a bitmask of game event flags.
 scanLineMinY        dc.w    0
 scanLineMaxY        dc.w    0
 
-fillColour          dc.l    $00ffffff
-outlineColour       dc.l    $00ffffff
-
 ; sprites
 spriteDBNumber      dc.w    0           ; the number used to reference which part of the dirty buffer this sprite should use
 spriteSize          dc.w    $0000       ; $wwhh
@@ -74,20 +71,49 @@ spriteY             dc.b    0
 randomSeed          dc.l    $12345678
 
 ; graphics
+width               dc.w    0
+height              dc.w    0
+border              dc.w    0
+fillColour          dc.l    $00ffffff
+outlineColour       dc.l    $00ffffff
+
+; font rendering variables
 digitPlotX          dc.w    0
 digitPlotY          dc.w    0
 digitPlotLine       dc.b    0
 digitCount          dc.b    0
 fontSize            dc.b    1           ; multiples of fontSize, 0=invalid, 1=normal, 2=larger...
 fontBold            dc.b    0           ; 0=normal, 1=bold
+textX               dc.w    0
+textY               dc.w    0
+fontCharacterOffset dc.w    0
+characterWidth      dc.b    0
+characterHeight     dc.b    0
+characterRowBits    dc.b    0
+fontVariableEVEN    dc.b    0
 
-; text display
-cleanEnd            dc.b    '   ',0             ; space for the end of a string to cover anything left from before
-positionMessage     dc.b    'Position: ',0      ; the current x,y when positioning a sprite
-scaleMessage        dc.b    'Scale: ',0         ; the current scale when positioning a sprite
-flipMessage         dc.b    'Flip: ',0          ; the current flip when positioning a sprite
-spacer              dc.b    '   -   ',0         ; spacer between xy, scale and flip
-cycleMessage        dc.b    'Cycle count: ',0   ; DEBUG : the cycles for performance. Remove when game finished
+
+; text line variables        O O O O O O O O O O O O O O O O
+cleanEnd            dc.b    '   ',0
+positionMessage     dc.b    'Position: ',0,0
+scaleMessage        dc.b    'Scale: ',0
+flipMessage         dc.b    'Flip: ',0,0
+spacer              dc.b    '   -   ',0
+cycleMessage        dc.b    'Cycle count: ',0
+gameNameText        dc.b    'Banana Donkey',0
+pressKeyMessage     dc.b    'Press any key to play',0
+
+; text paragraph variables
+;            O O O O O O O O O O O O O O O O O O O O O O O O O O O O O
+instructionText:
+    dc.b    'Naughty MONKEY is throwing away good bananas!',0
+    dc.b    'You have been hired to stop the wastefulness. Using',0
+    dc.b    'DONKEY, (with the cursor keys), catch the BANANAS',0
+    dc.b    'before they splat on the shore. Banana waste will not',0
+    dc.b    'be tolerated. So should you drop more than three ',0
+    dc.b    'bananas, you will be FIRED!',0
+    dc.b    0,0
+
 ;====================================================
 ;===                                              ===
 ;===       KEEP THE BYTE COUNT EVEN! INCLUDE      ===
@@ -95,8 +121,8 @@ cycleMessage        dc.b    'Cycle count: ',0   ; DEBUG : the cycles for perform
 ;===                                              ===
 ;====================================================
 
-; sound paths
-squelchFilePath     dc.b    'sounds\squelch.wav',0
+; sound paths                O O O O O O O O O O O
+squelchFilePath     dc.b    'sounds\squelch-.wav',0
 scrumpleFilePath    dc.b    'sounds\scrumple.wav',0
 monkey1FilePath     dc.b    'sounds\monkey-1.wav',0
 monkey2FilePath     dc.b    'sounds\monkey-2.wav',0
@@ -104,7 +130,6 @@ monkey3FilePath     dc.b    'sounds\monkey-3.wav',0
 monkey4FilePath     dc.b    'sounds\monkey-4.wav',0
 monkey5FilePath     dc.b    'sounds\monkey-5.wav',0
 monkey6FilePath     dc.b    'sounds\monkey-6.wav',0
-fillerPath          dc.b    '',0
 ;====================================================
 ;===                                              ===
 ;===       KEEP THE BYTE COUNT EVEN! INCLUDE      ===

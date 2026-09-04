@@ -156,8 +156,7 @@ BlankSprite:
     bsr     scaleNumber
     add.w   d0,d4
 
-    moveq   #87,d0
-    trap    #15
+    jsr     Trap15DrawFilledRectangle
     
     rts
 

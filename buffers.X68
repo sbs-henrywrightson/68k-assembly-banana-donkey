@@ -51,3 +51,13 @@ vertices:
 digitBuffer:    
     ds.b    6               ; the maximum number of digits that can be read, (99999 will fit in a word)
     ds.l    4               ; spacer
+
+;====================================================
+;===                                              ===
+;===                 Text buffers                 ===
+;===                                              ===
+;====================================================
+; the text buffer is used to hold a string of characters for the font renderer
+textBuffer:
+    ds.b    100             ; enough room for 100 characters
+    ds.l    4               ; spacer

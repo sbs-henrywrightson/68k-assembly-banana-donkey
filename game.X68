@@ -15,12 +15,18 @@
 PlayGame:
     ;jsr     PositionSprite             ; DEBUG : move a sprite around to get position and scale
 
-    jsr     ClearScreen
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
     ;jsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
-    bsr     OutputDebugText
+    ;bsr     OutputDebugText
     bsr     InitialiseGame
+
+    bsr     ShowWelcomeMessage
+    jsr     RepaintScreen
+
+    bsr     WaitForKeypress
+
+    jsr     HideMessageOverlay
     jsr     RepaintScreen
 
 .gameLoop:
@@ -39,7 +45,7 @@ PlayGame:
     ; THROW BANANA - is it time to throw a banana
     move.l  systemTime,d0
     sub.l   bananaThrowTime,d0
-    cmp.l   #BANANA_THROW_INTERVAL,d0       ; is it time to throw a banana
+    cmp.l   #BANANA_THROW_INTERVAL,d0   ; is it time to throw a banana
     blo     .skipThrow
     bsr     ThrowBanana
 .skipThrow:
@@ -49,43 +55,80 @@ PlayGame:
 
     bra     .gameLoop
     rts
+
+ShowWelcomeMessage:
+    jsr     ShowMessageOverlay
+
+    move.l  #COLOUR_YELLOW,d1
+    jsr     SetPenColour
+
+    bsr     GetBoxCentre
+
+    ; Banana Donkey
+    SetFont gameFont,#GAME_FONT_HEIGHT,#2,#1
+    lea     gameNameText,a0
+    move.w  d1,textX
+    move.w  d2,textY
+    addi.w  #75,textX
+    addi.w  #22,textY
+    bsr     RenderText
+
+    ; Instructions
+    SetFont gameFont,#GAME_FONT_HEIGHT,#1,#0
+    lea     instructionText,a0
+    move.w  d1,textX
+    move.w  d2,textY
+    addi.w  #20,textX
+    addi.w  #70,textY
+    bsr     RenderParagraph
     
+    ; Press a key
+    lea     pressKeyMessage,a0
+    move.w  d1,textX
+    move.w  d2,textY
+    addi.w  #80,textX
+    addi.w  #170,textY
+    bsr     RenderText
+    rts
+
+WaitForKeypress:
+    moveq   #5,d0
+    trap    #15
+    rts
+
 DrawBackdrop:
     ; SKY
     move.l  #$70c1ff,d1                 ; fill
     jsr     SetBackgroundColour
     move.l  #$70c1ff,d1                 ; outline
     jsr     SetPenColour
-    moveq   #87,d0
     move.w  #0,d1                       ; x0
     move.w  #0,d2                       ; y0
     move.w  #650,d3                     ; x1
     move.w  #149,d4                     ; y1
-    trap    #15
+    jsr     Trap15DrawFilledRectangle
 
     ; DESERT
     move.l  #$ffe894,d1                 ; fill
     jsr     SetBackgroundColour
     move.l  #$ffe894,d1                 ; outline
     jsr     SetPenColour
-    moveq   #87,d0
     move.w  #0,d1                       ; x0
     move.w  #150,d2                     ; y0
     move.w  #650,d3                     ; x1
     move.w  #419,d4                     ; y1
-    trap    #15
+    jsr     Trap15DrawFilledRectangle
 
     ; SEA
     move.l  #$002ee6,d1                 ; fill
     jsr     SetBackgroundColour
     move.l  #$002ee6,d1                 ; outline
     jsr     SetPenColour
-    moveq   #87,d0
     move.w  #0,d1                       ; x0
     move.w  #420,d2                     ; y0
     move.w  #650,d3                     ; x1
     move.w  #480,d4                     ; y1
-    trap    #15
+    jsr     Trap15DrawFilledRectangle
     rts
 
 DrawSceneSprites:
@@ -194,19 +237,12 @@ InitialiseGame:
     lea     lane2Positions,a5
     lea     lane3Positions,a6
 
-    ;          3322222222221111111111                   ; DEBUG : Remove
-    ;          10987654321098765432109876543210         ; DEBUG : Remove
-    ;move.l  #%00010000000100000001000000010000,lane1   ; DEBUG : Remove
-    ;move.w  #4,bananaCount                             ; DEBUG : Remove
-    ;bsr     RenderLaneContents                         ; DEBUG : Remove
-    ;jsr     RepaintScreen                              ; DEBUG : Remove
-
     rts
 
 RemoveMonkey:
     btst    #0,gameFlags
     beq     .noFlip
-    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
+    SetSprite monkey,monkeySpriteSize,#MONKEY_DB_NUMBER,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
     jsr     RestoreDirtyRectangle
 .noFlip
     rts
@@ -221,7 +257,7 @@ FlipMonkey:
     rts
 
 DrawMonkey:
-    SetSprite monkey,monkeySpriteSize,#MAX_BANANAS,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
+    SetSprite monkey,monkeySpriteSize,#MONKEY_DB_NUMBER,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
     jsr     SaveDirtyRectangle
     jsr     DrawSprite
     rts
@@ -264,7 +300,7 @@ ThrowBanana:
     addq    #1,bananaCount
     bset    #0,gameFlags                ; flip the monkey
 
-    bsr     OutputDebugText             ; DEBUG : REMOVE
+    ;bsr     OutputDebugText            ; DEBUG : REMOVE
     ;bsr     RenderLaneContents         ; DEBUG : REMOVE
     jsr     PlayThrowSound
     jsr     RepaintScreen
@@ -307,7 +343,7 @@ MoveBananas:
     bsr     BananaCollisionCheck
     bsr     BananaCatchCheck
 
-    bsr     OutputDebugText             ; DEBUG : REMOVE
+    ;bsr     OutputDebugText             ; DEBUG : REMOVE
 
     btst    #1,gameFlags                ; has the banana collided with the donkey
     bne     .donkeyCollision
@@ -331,13 +367,13 @@ MoveBananas:
     rts
 
 MoveDonkey:
-    move.l  systemTime,d0
-    sub.l   donkeyMoveTime,d0           ; debounce this event to prevent the donkey from moving too fast
-    cmp.l   #DONKEY_MOVE_INTERVAL,d0    ; has it been long enough since the last donkey move to poll the keyboard again
-    blo     .finishedMoving
+    ;move.l  systemTime,d0
+    ;sub.l   donkeyMoveTime,d0           ; debounce this event to prevent the donkey from moving too fast
+    ;cmp.l   #DONKEY_MOVE_INTERVAL,d0    ; has it been long enough since the last donkey move to poll the keyboard again
+    ;blo     .finishedMoving
 
     moveq   #19,d0
-    move.l  #$00002527,d1  ; check for keypress Cursor Left, Cursor Right
+    move.l  #$00004144,d1  ; check for keypress a,d keys
     trap    #15
 
     move.w  donkeyLane,d0
@@ -370,7 +406,7 @@ MoveDonkey:
 
 
 RemoveDonkey:
-    SetSprite donkey,donkeySpriteSize,#MAX_BANANAS+1,donkeyX,#DONKEY_Y,#DONKEY_SCALE,donkeyOrientation
+    SetSprite donkey,donkeySpriteSize,#DONKEY_DB_NUMBER,donkeyX,#DONKEY_Y,#DONKEY_SCALE,donkeyOrientation
     jsr     RestoreDirtyRectangle
     rts
 
@@ -394,7 +430,7 @@ DisplayDonkey:
     rts
 
 PlotDonkey:
-    SetSprite donkey,donkeySpriteSize,#MAX_BANANAS+1,donkeyX,#DONKEY_Y,#DONKEY_SCALE,donkeyOrientation
+    SetSprite donkey,donkeySpriteSize,#DONKEY_DB_NUMBER,donkeyX,#DONKEY_Y,#DONKEY_SCALE,donkeyOrientation
     jsr     SaveDirtyRectangle
     jsr     DrawSprite
     rts
