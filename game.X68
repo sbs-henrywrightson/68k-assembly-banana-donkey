@@ -17,14 +17,15 @@ PlayGame:
 
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
-    ;jsr     DrawGrid                   ; DEBUG : for movement debugging. Remove when the banana lanes work
-    ;bsr     OutputDebugText
+    ;jsr     OutputDebugText            ; DEBUG : Remove
     bsr     InitialiseGame
 
     bsr     ShowWelcomeMessage
     jsr     RepaintScreen
 
-    bsr     WaitForKeypress
+    jsr     Trap15EchoOff
+    jsr     Trap15ReadKeyboardCharacter
+    jsr     RepaintScreen
 
     jsr     HideMessageOverlay
     jsr     RepaintScreen
@@ -65,11 +66,11 @@ ShowWelcomeMessage:
     bsr     GetBoxCentre
 
     ; Banana Donkey
-    SetFont gameFont,#GAME_FONT_HEIGHT,#2,#1
+    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#1
     lea     gameNameText,a0
     move.w  d1,textX
     move.w  d2,textY
-    addi.w  #75,textX
+    addi.w  #40,textX
     addi.w  #22,textY
     bsr     RenderText
 
@@ -89,11 +90,6 @@ ShowWelcomeMessage:
     addi.w  #80,textX
     addi.w  #170,textY
     bsr     RenderText
-    rts
-
-WaitForKeypress:
-    moveq   #5,d0
-    trap    #15
     rts
 
 DrawBackdrop:
@@ -300,7 +296,7 @@ ThrowBanana:
     addq    #1,bananaCount
     bset    #0,gameFlags                ; flip the monkey
 
-    ;bsr     OutputDebugText            ; DEBUG : REMOVE
+    ;jsr     OutputDebugText            ; DEBUG : REMOVE
     ;bsr     RenderLaneContents         ; DEBUG : REMOVE
     jsr     PlayThrowSound
     jsr     RepaintScreen
@@ -343,7 +339,7 @@ MoveBananas:
     bsr     BananaCollisionCheck
     bsr     BananaCatchCheck
 
-    ;bsr     OutputDebugText             ; DEBUG : REMOVE
+    ;jsr     OutputDebugText             ; DEBUG : REMOVE
 
     btst    #1,gameFlags                ; has the banana collided with the donkey
     bne     .donkeyCollision
@@ -499,119 +495,6 @@ ClearCaughtBananas:                     ; remove the bananas that have been caug
     subq    #1,bananaCount
     jsr     PlayCatchSound
 .finished:
-    rts
-
-OutputDebugText:
-    move.l  #COLOUR_WHITE,d1
-    jsr     SetPenColour
-
-    moveq   #11,d0                      ; position at 0,28
-    move.w  #$001c,d1
-    trap    #15
-
-    moveq   #0,d5
-    move.l  lane1,d0
-    cmp.w   #0,donkeyLane
-    bne     .displayLane1
-    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
-.displayLane1:
-    jsr     DisplayLaneMask
-
-    moveq   #0,d5
-    move.l  lane2,d0
-    cmp.w   #1,donkeyLane
-    bne     .displayLane2
-    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
-.displayLane2:
-    jsr     DisplayLaneMask
-
-    moveq   #0,d5
-    move.l  lane3,d0
-    cmp.w   #2,donkeyLane
-    bne     .displayLane3
-    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
-.displayLane3:
-    jsr     DisplayLaneMask
-
-    bsr     DisplayGameFlags
-    bsr     DisplayBananaCount
-
-    rts
-
-DisplayLaneMask:                        ; print the long word in d0 as binary with leading zeros
-    move.l  d0,d4
-    moveq   #31,d3
-
-.loop:
-    btst    d3,d4
-    beq     .noBit
-
-    move.l  #COLOUR_RED,d1
-    cmp.b   #1,d5
-    bne     .setBackground
-    btst    #1,gameFlags
-    beq     .setBackground
-    move.l  #COLOUR_GREEN,d1
-.setBackground:
-    jsr     SetBackgroundColour
-
-    moveq   #6,d0
-    moveq   #'+',d1
-    trap    #15
-    bra     .nextBit
-
-.noBit:
-    move.l  #COLOUR_BLUE,d1
-    jsr     SetBackgroundColour
-    
-    moveq   #0,d0
-    moveq   #0,d1
-    move.l  d3,d0
-    divu    #10,d0
-    swap    d0
-    move.w  d0,d1
-
-    moveq   #15,d0
-    moveq   #10,d2
-    trap    #15
-
-.nextBit:
-    dbra    d3,.loop
-
-    moveq   #6,d0
-    moveq   #13,d1
-    trap    #15
-    moveq   #10,d1
-    trap    #15
-    rts
-
-DisplayGameFlags:
-    moveq   #11,d0
-    move.w  #$321c,d1                   ; position at 50,28
-    trap    #15
-
-    move.b  gameFlags,d2
-    moveq   #7,d3
-.bitLoop:
-    moveq   #'0',d1
-    btst    d3,d2
-    beq.s   .outputBit
-    moveq   #'1',d1
-.outputBit:
-    moveq   #6,d0
-    trap    #15
-    dbra    d3,.bitLoop
-    rts
-
-DisplayBananaCount:
-    moveq   #11,d0
-    move.w  #$3c1c,d1                   ; position at 60,28
-    trap    #15
-
-    moveq   #15,d0
-    move.w  bananaCount,d1
-    moveq   #10,d2
-    trap    #15
     rts
 
 ******************************************************

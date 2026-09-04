@@ -74,21 +74,24 @@ RepaintScreen:
     trap    #15
     rts
 
-PlotNumber:                     ; plot the 5-digit number in d0 as pixels at digitPlotX,digitPlotY
+RenderNumber:                     ; plot the 5-digit number in d0 at digitPlotX,digitPlotY
     bsr     BuildDigitBuffer
-    bsr     PlotDigits
+    bsr     RenderText
     rts
 
 BuildDigitBuffer:               ; build digit buffer so the number can be read from left to right. d0=number
     move.l  d0,d1
     lea     digitBuffer,a0      ; point just past buffer
-    adda.w  #5,a0               ; maximum of 5 digits so the number fits in a word
+    adda.w  #8,a0               ; move to the end of the buffer
+    moveq   #0,d0
+    move.b  d0,-(a0)            ; store null terminator
     move.b  #0,digitCount
 
 .getDigit:
     divu    #10,d1              ; quotient in low word, remainder in high word
 
     swap    d1                  ; remainder -> low word
+    addi    #48,d1              ; the numbers start at 48 on the ascii table
     move.b  d1,-(a0)            ; store it
     addq.b  #1,digitCount       ; increment the digit counter
 
@@ -97,80 +100,6 @@ BuildDigitBuffer:               ; build digit buffer so the number can be read f
 
     tst.w   d1
     bne     .getDigit
-    rts
-
-PlotDigits:                     ; d0 = number to plot
-    moveq   #0,d4
-    move.b  digitCount,d4
-    subi.b  #1,d4
-.digitLoop:
-    moveq   #0,d0
-    move.b  (a0)+,d0            ; read digit from buffer
-    
-    lea     digitsFont,a1
-    lsl.w   #3,d0               ; digit * 8
-    adda.w  d0,a1
-
-    moveq   #0,d0
-    moveq   #7,d3
-.digitLineLoop:
-    move.b  (a1)+,d0            ; read first bit line of digit into d0
-    move.b  #7,digitPlotLine
-    sub.b   d3,digitPlotLine
-    bsr     PlotBitLine
-
-    dbra    d3,.digitLineLoop
-
-    dbra    d4,.digitLoop
-    rts
-
-PlotBitLine:                    ; d4 = digit counter
-    CacheDataRegisters
-
-    move    d0,d5
-    move.b  #7,d3
-.bitLineLoop:
-    btst    d3,d5
-    beq     .noPixel
-
-    moveq   #0,d0
-    move.b  fontSize,d0
-
-    moveq   #0,d1
-    move.b  digitCount,d1
-    subq    #1,d1
-    sub.b   d4,d1               ; start with current zero-based digit position 
-    mulu    #8,d1               ; shift along 8bits for each digit displayed
-    addq    #7,d1
-    sub.b   d3,d1               ; add the number of bits along the line
-    mulu.w  d0,d1               ; increase font size by multiples of fontSize
-    add.w   digitPlotX,d1       ; add the x position
-
-    moveq   #0,d2
-    add.b   digitPlotLine,d2    ; the y is simply the current line
-    mulu.w  d0,d2               ; increase font size by multiples of fontSize
-    add.w   digitPlotY,d2       ; add the y position
-
-    moveq   #82,d0
-    trap    #15
-
-    moveq   #0,d0       ; DEBUG : these turn a single pixel into a block of 4
-    move.b  fontBold,d0
-    tst.b   d0
-    beq     .skipBold
-    moveq   #82,d0
-    addq    #1,d1
-    trap    #15
-    addq    #1,d2
-    trap    #15
-    subq    #1,d1
-    trap    #15
-.skipBold:
-
-.noPixel:
-    dbra    d3,.bitLineLoop
-
-    RestoreDataRegisters
     rts
 
 ShowMessageOverlay:

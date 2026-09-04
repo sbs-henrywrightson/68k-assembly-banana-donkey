@@ -44,7 +44,6 @@ PositionSprite:
     jsr     ClearScreen
     jsr     DrawBackdrop
     jsr     DrawSceneSprites
-    ;bsr     DrawGrid
 
 .moveLoop:
     SetSprite donkey,donkeySpriteSize,#0,posX,posY,scale,flip
@@ -225,57 +224,121 @@ OutputInfo:
     
     rts
 
-DrawGrid:
-    moveq   #31,d6
+;====================================================
+;===                                              ===
+;===               Game Diagnostics               ===
+;===                                              ===
+;====================================================
 
-.horizontalLoop:
-    move.l  #COLOUR_GREY,d1
+OutputDebugText:
+    move.l  #COLOUR_WHITE,d1
     jsr     SetPenColour
+
+    moveq   #11,d0                      ; position at 0,28
+    move.w  #$001c,d1
+    trap    #15
+
+    moveq   #0,d5
+    move.l  lane1,d0
+    cmp.w   #0,donkeyLane
+    bne     .displayLane1
+    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
+.displayLane1:
+    bsr     DisplayLaneMask
+
+    moveq   #0,d5
+    move.l  lane2,d0
+    cmp.w   #1,donkeyLane
+    bne     .displayLane2
+    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
+.displayLane2:
+    bsr     DisplayLaneMask
+
+    moveq   #0,d5
+    move.l  lane3,d0
+    cmp.w   #2,donkeyLane
+    bne     .displayLane3
+    moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
+.displayLane3:
+    bsr     DisplayLaneMask
+
+    bsr     DisplayGameFlags
+    bsr     DisplayBananaCount
+
+    rts
+
+DisplayLaneMask:                        ; print the long word in d0 as binary with leading zeros
+    move.l  d0,d4
+    moveq   #31,d3
+
+.loop:
+    btst    d3,d4
+    beq     .noBit
+
+    move.l  #COLOUR_RED,d1
+    cmp.b   #1,d5
+    bne     .setBackground
+    btst    #1,gameFlags
+    beq     .setBackground
+    move.l  #COLOUR_GREEN,d1
+.setBackground:
+    jsr     SetBackgroundColour
+
+    moveq   #6,d0
+    moveq   #'+',d1
+    trap    #15
+    bra     .nextBit
+
+.noBit:
+    move.l  #COLOUR_BLUE,d1
+    jsr     SetBackgroundColour
     
-    ;draw lines across the screen for the bananas vertical movement
-    move.w  d6,d5
-    mulu    #11,d5
+    moveq   #0,d0
+    moveq   #0,d1
+    move.l  d3,d0
+    divu    #10,d0
+    swap    d0
+    move.w  d0,d1
 
-    move.w  #0,d1
-    move.w  d5,d2
-    move.w  #RES_X,d3
-    move.w  d5,d4
-    jsr     DrawLine
+    moveq   #15,d0
+    moveq   #10,d2
+    trap    #15
 
-    SetFont digitsFont,#DIGIT_FONT_HEIGHT,#1,#0
+.nextBit:
+    dbra    d3,.loop
 
-    move.w  #200,digitPlotX
-    move.w  d5,digitPlotY
-    addq    #5,digitPlotY
-    move.w  d6,d0
-    bsr     PlotNumber
+    moveq   #6,d0
+    moveq   #13,d1
+    trap    #15
+    moveq   #10,d1
+    trap    #15
+    rts
 
-    move.w  #300,digitPlotX
-    move.w  d5,digitPlotY
-    addq    #5,digitPlotY
-    move.w  d6,d0
-    bsr     PlotNumber
-    
-    move.w  #400,digitPlotX
-    move.w  d5,digitPlotY
-    addq    #5,digitPlotY
-    move.w  d6,d0
-    bsr     PlotNumber
+DisplayGameFlags:
+    moveq   #11,d0
+    move.w  #$321c,d1                   ; position at 50,28
+    trap    #15
 
-    dbra    d6,.horizontalLoop
+    move.b  gameFlags,d2
+    moveq   #7,d3
+.bitLoop:
+    moveq   #'0',d1
+    btst    d3,d2
+    beq.s   .outputBit
+    moveq   #'1',d1
+.outputBit:
+    moveq   #6,d0
+    trap    #15
+    dbra    d3,.bitLoop
+    rts
 
-    ;draw three lines for the three banana lanes
-    move.w  #200,d1
-    move.w  #0,d2
-    move.w  #200,d3
-    move.w  #RES_Y,d4
-    jsr     DrawLine
+DisplayBananaCount:
+    moveq   #11,d0
+    move.w  #$3c1c,d1                   ; position at 60,28
+    trap    #15
 
-    move.w  #300,d1
-    move.w  #300,d3
-    jsr     DrawLine
-
-    move.w  #400,d1
-    move.w  #400,d3
-    jsr     DrawLine
+    moveq   #15,d0
+    move.w  bananaCount,d1
+    moveq   #10,d2
+    trap    #15
     rts

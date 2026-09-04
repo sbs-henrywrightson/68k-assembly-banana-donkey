@@ -49,7 +49,7 @@ vertices:
 ;====================================================
 ; the digit buffer is used to write a number in backwards so it can be read one digit at a time from left to right
 digitBuffer:    
-    ds.b    6               ; the maximum number of digits that can be read, (99999 will fit in a word)
+    ds.b    8               ; the maximum number of digits that can be read, (99999 will fit in a word)
     ds.l    4               ; spacer
 
 ;====================================================

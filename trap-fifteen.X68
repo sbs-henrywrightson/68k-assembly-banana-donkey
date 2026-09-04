@@ -8,8 +8,14 @@
 *            : keep remembering the task numbers!
 *-----------------------------------------------------------
 
-Trap15GetPixelColour:       ; get pixel colour - d1.w=x, d2.w=y, result in d0.l ($00BBGGRR)
-    move.w  #83,d0
+Trap15ReadKeyboardCharacter:
+    moveq   #5,d0
+    trap    #15
+    rts
+
+Trap15EchoOff:
+    moveq   #12,d0
+    moveq   #0,d1
     trap    #15
     rts
 
@@ -20,6 +26,11 @@ Trap15SetPenColour:         ; get pen colour - d1=colour ($00BBGGRR)
 
 Trap15PlotPixel:            ; draw pixel at x,y in pen colour - d1.w=x, d2.w=y
     moveq   #82,d0
+    trap    #15
+    rts
+
+Trap15GetPixelColour:       ; get pixel colour - d1.w=x, d2.w=y, result in d0.l ($00BBGGRR)
+    move.w  #83,d0
     trap    #15
     rts
 
