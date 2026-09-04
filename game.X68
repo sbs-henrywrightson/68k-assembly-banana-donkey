@@ -244,7 +244,7 @@ RemoveMonkey:
     beq     .noFlip
     SetSprite monkey,monkeySpriteSize,#MONKEY_DB_NUMBER,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
     jsr     RestoreDirtyRectangle
-.noFlip
+.noFlip:
     rts
 
 FlipMonkey:
@@ -253,7 +253,7 @@ FlipMonkey:
     eori.w  #1,monkeyOrientation
     bsr     DrawMonkey
     bclr    #0,gameFlags
-.noFlip
+.noFlip:
     rts
 
 DrawMonkey:
@@ -351,17 +351,17 @@ MoveBananas:
     bne     .donkeyCollision
     bsr     RenderLaneContents          ; banana/donkey collision hasn't occurred so just render the lane contents
     bra     .moveComplete
-.donkeyCollision
+.donkeyCollision:
     bsr     RemoveDonkey                ; banana/donkey collision has occurred so remove the donkey before rendering the lane contents
     bsr     RenderLaneContents
     bsr     DisplayDonkey
 
-.moveComplete
+.moveComplete:
     btst    #2,gameFlags                ; has a banana been dropped
     beq     .finished
     jsr     PlayDropSound
 
-.finished
+.finished:
     jsr     RepaintScreen
 
     rts
@@ -401,7 +401,7 @@ MoveDonkey:
     bsr     DisplayDonkey
     move.l  systemTime,donkeyMoveTime
 
-.finishedMoving
+.finishedMoving:
     rts
 
 
@@ -416,15 +416,15 @@ DisplayDonkey:
     cmp.w   #1,donkeyLane
     beq     .setLane2
     bra     .setLane3
-.setLane1
+.setLane1:
     move.w  #DONKEY_LANE1_X,d0
     bra     .display
-.setLane2
+.setLane2:
     move.w  #DONKEY_LANE2_X,d0
     bra     .display
-.setLane3
+.setLane3:
     move.w  #DONKEY_LANE3_X,d0
-.display
+.display:
     move.w  d0,donkeyX
     bsr     PlotDonkey
     rts
@@ -514,7 +514,7 @@ OutputDebugText:
     cmp.w   #0,donkeyLane
     bne     .displayLane1
     moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
-.displayLane1
+.displayLane1:
     jsr     DisplayLaneMask
 
     moveq   #0,d5
@@ -522,7 +522,7 @@ OutputDebugText:
     cmp.w   #1,donkeyLane
     bne     .displayLane2
     moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
-.displayLane2
+.displayLane2:
     jsr     DisplayLaneMask
 
     moveq   #0,d5
@@ -530,7 +530,7 @@ OutputDebugText:
     cmp.w   #2,donkeyLane
     bne     .displayLane3
     moveq   #1,d5                       ; this is the lane the donkey is in so a collision check might be needed
-.displayLane3
+.displayLane3:
     jsr     DisplayLaneMask
 
     bsr     DisplayGameFlags
@@ -552,7 +552,7 @@ DisplayLaneMask:                        ; print the long word in d0 as binary wi
     btst    #1,gameFlags
     beq     .setBackground
     move.l  #COLOUR_GREEN,d1
-.setBackground
+.setBackground:
     jsr     SetBackgroundColour
 
     moveq   #6,d0
@@ -575,7 +575,7 @@ DisplayLaneMask:                        ; print the long word in d0 as binary wi
     moveq   #10,d2
     trap    #15
 
-.nextBit
+.nextBit:
     dbra    d3,.loop
 
     moveq   #6,d0
@@ -597,7 +597,7 @@ DisplayGameFlags:
     btst    d3,d2
     beq.s   .outputBit
     moveq   #'1',d1
-.outputBit
+.outputBit:
     moveq   #6,d0
     trap    #15
     dbra    d3,.bitLoop
@@ -711,7 +711,7 @@ RenderLaneContents:
     beq     .saveBanana
     cmp.b   #0,d3
     beq     .displayBanana
-.removeBanana
+.removeBanana:
     jsr     RestoreDirtyRectangle
     bra     .nextBit
 .saveBanana:

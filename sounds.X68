@@ -109,7 +109,7 @@ PlayThrowSound:                         ; monkey throws a banana
     moveq   #MONKEY_6_SOUND_ID,d1
 
 
-.playSound
+.playSound:
     bsr     PlaySound
 
     RestoreRegisters
