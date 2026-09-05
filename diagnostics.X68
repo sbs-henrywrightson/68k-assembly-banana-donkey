@@ -21,7 +21,7 @@ DisplayCycleCounter:
     moveq   #31,d0
     trap    #15
 
-    lea     cycleMessage,a1
+    lea     cycleText,a1
     moveq   #14,d0
     trap    #15
     
@@ -179,7 +179,7 @@ OutputInfo:
     trap    #15
     
     moveq   #14,d0      ; position message
-    lea     positionMessage,a1
+    lea     positionText,a1
     trap    #15
 
     moveq   #15,d0      ; x-coord
@@ -195,11 +195,11 @@ OutputInfo:
     trap    #15
 
     moveq   #14,d0      ; spacer
-    lea     spacer,a1
+    lea     spacerText,a1
     trap    #15
 
     moveq   #14,d0      ; scale message
-    lea     scaleMessage,a1
+    lea     scaleText,a1
     trap    #15
 
     moveq   #15,d0      ; scale
@@ -207,11 +207,11 @@ OutputInfo:
     trap    #15
 
     moveq   #14,d0      ; spacer
-    lea     spacer,a1
+    lea     spacerText,a1
     trap    #15
 
     moveq   #14,d0      ; flip message
-    lea     flipMessage,a1
+    lea     flipText,a1
     trap    #15
 
     moveq   #15,d0      ; flip
@@ -219,7 +219,7 @@ OutputInfo:
     trap    #15
 
     moveq   #14,d0      ; output some spaces at the end
-    lea     cleanEnd,a1
+    lea     cleanEndText,a1
     trap    #15
     
     rts

@@ -50,8 +50,8 @@ oldLane3            dc.l    0           ; the previous value of lane3
 donkeyX             dc.w    0           ; the x-coord of the donkey
 donkeyLane          dc.w    0           ; the lane the donkey is in. 0=lane1, 1=lane2, 2=lane3
 donkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
-bananaCatchCount    dc.b    0           ; how many bananas have been caught
-bananaDropCount     dc.b    0           ; how many bananas have been dropped
+score               dc.w    0           ; how many bananas have been caught
+lives               dc.w    0           ; how many bananas drops permitted before game over
 gameFlags           dc.w    0           ; a bitmask of game event flags.
                                         ;   bit 0 = flip monkey
                                         ;   bit 1 = banana/donkey collision
@@ -96,14 +96,17 @@ fontVariableEVEN    dc.b    0
 
 
 ; text line variables        O O O O O O O O O O O O O O O O
-cleanEnd            dc.b    '   ',0
-positionMessage     dc.b    'Position: ',0,0
-scaleMessage        dc.b    'Scale: ',0
-flipMessage         dc.b    'Flip: ',0,0
-spacer              dc.b    '   -   ',0
-cycleMessage        dc.b    'Cycle count: ',0
+cleanEndText        dc.b    '   ',0
+positionText        dc.b    'Position: ',0,0
+scaleText           dc.b    'Scale: ',0
+flipText            dc.b    'Flip: ',0,0
+spacerText          dc.b    '   -   ',0
+cycleText           dc.b    'Cycle count: ',0
 gameNameText        dc.b    'Banana Donkey',0
-pressKeyMessage     dc.b    'Press any key to play',0
+pressKeyText        dc.b    'Press any key to play',0
+scoreText           dc.b    'Caught : ',0
+livesText           dc.b    'Drops left : ',0
+;firedText           dc.b    'You''ve been FIRED',0
 
 ; text paragraph variables
 ;            O O O O O O O O O O O O O O O O O O O O O O O O O O O O O

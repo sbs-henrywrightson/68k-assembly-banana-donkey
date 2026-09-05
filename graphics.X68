@@ -74,7 +74,7 @@ RepaintScreen:
     trap    #15
     rts
 
-RenderNumber:                     ; plot the 5-digit number in d0 at digitPlotX,digitPlotY
+RenderNumber:                     ; plot the 5-digit number in d0 at textX,textY
     bsr     BuildDigitBuffer
     bsr     RenderText
     rts
@@ -216,10 +216,6 @@ PlaceOverlay:                           ; display an overlay by lowering the pix
     move.w  x,d1
     move.w  y,d2
     jsr     Trap15GetPixelColour
-
-    ; darken pixel element by a variable factor. Each pixel element needs doing d0=Red/Blue/Green
-    ;mulu    #DARKEN_FACTOR_30,d0
-    ;lsr.l   #8,d0
 
     ; darken pixel colour by 50%
     and.l   #$00FEFEFE,d0
