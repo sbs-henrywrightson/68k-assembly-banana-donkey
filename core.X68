@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 18/8/2026
 * Type       : Include file
-* Depends on : 
 * Description: Core functions
 *-----------------------------------------------------------
 

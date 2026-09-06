@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 29/8/2026
 * Type       : Include file
-* Depends on : 
 * Description: Characters defined as groups of bit fields
 *-----------------------------------------------------------
 

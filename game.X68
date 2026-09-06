@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 20/8/2026
 * Type       : Include file
-* Depends on : 
 * Description: The main entry point to the game
 *-----------------------------------------------------------
 
@@ -229,11 +228,10 @@ ShowWelcomeMessage:
 
     jsr     ShowMessageOverlay
 
-    move.l  #COLOUR_YELLOW,d1
+    move.l  #COLOUR_ORANGE,d1
     jsr     SetPenColour
     move.l  #COLOUR_YELLOW,d1
     jsr     SetBackgroundColour
-
     bsr     GetBoxCentre
 
     ; Banana Donkey
@@ -244,6 +242,10 @@ ShowWelcomeMessage:
     addi.w  #40,textX
     addi.w  #22,textY
     bsr     RenderText
+
+    move.l  #COLOUR_YELLOW,d1
+    jsr     SetPenColour
+    bsr     GetBoxCentre
 
     ; Instructions
     SetFont gameFont,#GAME_FONT_HEIGHT,#1,#0
@@ -486,11 +488,9 @@ ThrowBanana:
 .spawnComplete:
     addq    #1,bananaCount
     bset    #GAMEFLAG_FLIP,gameFlags    ; flip the monkey
-
-    ;jsr     OutputDebugText            ; DEBUG : REMOVE
-    ;bsr     RenderLaneContents         ; DEBUG : REMOVE
     jsr     PlayThrowSound
     jsr     RepaintScreen
+
 .endEvent:
     rts
 
@@ -561,13 +561,8 @@ MoveBananas:
     rts
 
 MoveDonkey:
-    ;move.l  systemTime,d0
-    ;sub.l   donkeyMoveTime,d0           ; debounce this event to prevent the donkey from moving too fast
-    ;cmp.l   #DONKEY_MOVE_INTERVAL,d0    ; has it been long enough since the last donkey move to poll the keyboard again
-    ;blo     .finishedMoving
-
     moveq   #19,d0
-    move.l  #$00004144,d1  ; check for keypress a,d keys
+    move.l  #$00004144,d1               ; check for keypress a,d keys
     trap    #15
 
     move.w  donkeyLane,d0

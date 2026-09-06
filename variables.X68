@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 16/8/2026
 * Type       : Include file
-* Depends on : 
 * Description: Variables that the main program depends on
 *            : Don't forget to keep the byte count even
 *-----------------------------------------------------------
@@ -50,14 +49,11 @@ oldLane3            dc.l    0           ; the previous value of lane3
 donkeyX             dc.w    0           ; the x-coord of the donkey
 donkeyLane          dc.w    0           ; the lane the donkey is in. 0=lane1, 1=lane2, 2=lane3
 donkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
-score               dc.w    0           ; how many bananas have been caught
-lives               dc.w    0           ; how many bananas drops permitted before game over
+score               dc.w    0
+lives               dc.w    0
 highScore           dc.w    0
+gameFlags           dc.w    0           ; a bitmask of game event flags, bits in GAMEFLAG_ constants
 
-gameFlags           dc.w    0           ; a bitmask of game event flags.
-                                        ;   bit 0 = flip monkey
-                                        ;   bit 1 = banana/donkey collision
-                                        ;   bit 2 = banana hit ground
 ; polygon
 scanLineMinY        dc.w    0
 scanLineMaxY        dc.w    0

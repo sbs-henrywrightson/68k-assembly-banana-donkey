@@ -1,14 +1,13 @@
 *-----------------------------------------------------------
-* Title      : bresenham-triangle-fill
+* Title      : bresenham-line
 * Written by : Henry Wrightson
 * Date       : 16/8/2026
 * Type       : Include file
-* Depends on : constants.x68, graphics.x68
-* Description: Create a filled triangle by walking along the
-*            : Y-axis of a triangle with the Bresenham algorithm
-*            : and recording the left and right most points to
-*            : later go along that list and draw lines between them
-*            : to create a filled triangle
+* Description: Draw a line from x,y to x1,y1 using the Bresenham
+*            : algorithm to avoid the need for floating point 
+*            : maths. Also record the left and right most points
+*            : to later go along that list and draw lines between
+*            : them to create a filled polygon
 *-----------------------------------------------------------
 
 ;====================================================

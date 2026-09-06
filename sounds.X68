@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 1/9/2026
 * Type       : Include file
-* Depends on : 
 * Description: Load the sound files into memory
 *-----------------------------------------------------------
 

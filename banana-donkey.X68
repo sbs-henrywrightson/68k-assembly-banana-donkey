@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 16/8/2026
 * Type       : Program file
-* Depends on : 
 * Description: The main program file that includes all the
 *            : required files and starts the game
 *-----------------------------------------------------------

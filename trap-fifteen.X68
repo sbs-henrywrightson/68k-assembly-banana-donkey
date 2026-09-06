@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 2/9/2026
 * Type       : Include file
-* Depends on : 
 * Description: Trap #15 task functions so I don't have to
 *            : keep remembering the task numbers!
 *-----------------------------------------------------------

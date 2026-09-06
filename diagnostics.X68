@@ -2,8 +2,7 @@
 * Title      : diagnostics
 * Written by : Henry Wrightson
 * Date       : 17/8/2026
-* Type       : Program file
-* Depends on : 
+* Type       : Include file
 * Description: Sub-routines used for debugging the main app
 *-----------------------------------------------------------
 

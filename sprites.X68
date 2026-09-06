@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 16/8/2026
 * Type       : Include file
-* Depends on : polygons.x68
 * Description: routines for displaying various sprites
 *-----------------------------------------------------------
 

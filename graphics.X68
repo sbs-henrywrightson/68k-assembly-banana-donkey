@@ -3,7 +3,6 @@
 * Written by : Henry Wrightson
 * Date       : 16/8/2026
 * Type       : Include file
-* Depends on : constants.x68
 * Description: Sub-routines used for graphics. Mainly wrappers
 *            : for trap #15 tasks
 *-----------------------------------------------------------
@@ -13,7 +12,7 @@
 ;===             Graphics Sub-routines            ===
 ;===                                              ===
 ;====================================================
-InitialiseGraphics:          ; set the output window
+InitialiseGraphics:                     ; set the output window
     bsr     SetScreenResolution
     bsr     SetDoubleBufferMode
     bsr     ClearScreen
@@ -32,7 +31,7 @@ SetDoubleBufferMode:
     trap    #15
     rts
 
-ClearScreen:                    ; clear the screen
+ClearScreen:                            ; clear the screen
     move.l  #COLOUR_BACKGROUND,d1
     bsr     SetPenColour
     moveq   #11,d0
@@ -40,28 +39,28 @@ ClearScreen:                    ; clear the screen
     trap    #15
     rts
 
-SetPenColour:                   ; set pen colour to d1.l ($00RRGGBB)
+SetPenColour:                           ; set pen colour to d1.l ($00RRGGBB)
     bsr     ReverseRGB
     moveq   #80,d0
     trap    #15
     rts
 
-SetBackgroundColour:            ; set background colour to d1.l ($00RRGGBB)
+SetBackgroundColour:                    ; set background colour to d1.l ($00RRGGBB)
     bsr     ReverseRGB
     moveq   #81,d0
     trap    #15
     rts
     
-PlotPoint:                      ; plot a point at d1.w,d2.w
+PlotPoint:                              ; plot a point at d1.w,d2.w
     moveq   #82,d0
     trap    #15
     rts
 
-DrawLine:                       ; draw a line between (d1.w,d2.w) and (d3.w,d4.w)
+DrawLine:                               ; draw a line between (d1.w,d2.w) and (d3.w,d4.w)
     moveq   #84,d0
     trap    #15
 
-ReverseRGB:                     ; convert d1 from $00RRGGBB to $00BBGGRR
+ReverseRGB:                             ; convert d1 from $00RRGGBB to $00BBGGRR
     ror.w   #8,d1
     swap    d1
     lsl.w   #8,d1
@@ -74,28 +73,28 @@ RepaintScreen:
     trap    #15
     rts
 
-RenderNumber:                     ; plot the 5-digit number in d0 at textX,textY
+RenderNumber:                           ; plot the 5-digit number in d0 at textX,textY
     bsr     BuildDigitBuffer
     bsr     RenderText
     rts
 
-BuildDigitBuffer:               ; build digit buffer so the number can be read from left to right. d0=number
+BuildDigitBuffer:                       ; build digit buffer so the number can be read from left to right. d0=number
     move.l  d0,d1
-    lea     digitBuffer,a0      ; point just past buffer
-    adda.w  #8,a0               ; move to the end of the buffer
+    lea     digitBuffer,a0              ; point just past buffer
+    adda.w  #8,a0                       ; move to the end of the buffer
     moveq   #0,d0
-    move.b  d0,-(a0)            ; store null terminator
+    move.b  d0,-(a0)                    ; store null terminator
     move.b  #0,digitCount
 
 .getDigit:
-    divu    #10,d1              ; quotient in low word, remainder in high word
+    divu    #10,d1                      ; quotient in low word, remainder in high word
 
-    swap    d1                  ; remainder -> low word
-    addi    #48,d1              ; the numbers start at 48 on the ascii table
-    move.b  d1,-(a0)            ; store it
-    addq.b  #1,digitCount       ; increment the digit counter
+    swap    d1                          ; remainder -> low word
+    addi    #48,d1                      ; the numbers start at 48 on the ascii table
+    move.b  d1,-(a0)                    ; store it
+    addq.b  #1,digitCount               ; increment the digit counter
 
-    swap    d1                  ; quotient back to low word
+    swap    d1                          ; quotient back to low word
     andi.l  #$0000ffff,d1
 
     tst.w   d1
@@ -107,26 +106,26 @@ ShowMessageOverlay:
     move.w  #200,height
     bsr     GetBoxCentre
 
-    SetOverlay 0,d1,d2,#99,#99      ; 1,1
+    SetOverlay 0,d1,d2,#99,#99          ; 1,1
     bsr     PlaceOverlay
 
-    addi    #100,d1                 ; 2,1
+    addi    #100,d1                     ; 2,1
     SetOverlay 1,d1,d2,#99,#99
     bsr     PlaceOverlay
 
-    addi    #100,d1                 ; 3,1
+    addi    #100,d1                     ; 3,1
     SetOverlay 2,d1,d2,#99,#99
     bsr     PlaceOverlay
 
-    addi    #100,d2                 ; 3,2
+    addi    #100,d2                     ; 3,2
     SetOverlay 3,d1,d2,#99,#99
     bsr     PlaceOverlay
 
-    subi    #100,d1                 ; 2,2
+    subi    #100,d1                     ; 2,2
     SetOverlay 4,d1,d2,#99,#99
     bsr     PlaceOverlay
 
-    subi    #100,d1                 ; 1,2
+    subi    #100,d1                     ; 1,2
     SetOverlay 5,d1,d2,#99,#99
     bsr     PlaceOverlay
 
@@ -246,8 +245,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     sub.w   #1,width
     sub.w   #1,height
 
-    ; top border
-    move.w  x,d1
+    move.w  x,d1                        ; top border
     move.w  y,d2
     move.w  x,d3
     add.w   width,d3
@@ -255,8 +253,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     add.w   border,d4
     jsr     Trap15DrawFilledBox
 
-    ; right border
-    move.w  d3,d1
+    move.w  d3,d1                       ; right border
     move.w  d4,d2
     sub.w   border,d3
     add.w   height,d4
@@ -264,8 +261,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     sub.w   border,d4
     jsr     Trap15DrawFilledBox
 
-    ; bottom border
-    move.w  d3,d1
+    move.w  d3,d1                       ; bottom border
     add.w   border,d1
     move.w  d4,d2
     add.w   border,d2
@@ -273,8 +269,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     sub.w   width,d3
     jsr     Trap15DrawFilledBox
 
-    ; left border
-    move.w  d3,d1
+    move.w  d3,d1                       ; left border
     move.w  d4,d2
     add.w   border,d3
     add.w   border,d4
@@ -286,7 +281,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     add.w   #1,height
     rts
 
-RenderParagraph:                    ; a0=paragraph, d1=x, d2=y
+RenderParagraph:                        ; a0=paragraph, d1=x, d2=y
     CacheDataRegisters
 
     move.w  textX,d1
@@ -303,7 +298,7 @@ RenderParagraph:                    ; a0=paragraph, d1=x, d2=y
     RestoreDataRegisters
     rts
 
-RenderText:                         ; render the text in a0 at textX,textY, don't forget to use SetFont
+RenderText:                             ; render the text in a0 at textX,textY, don't forget to use SetFont
     CacheDataRegisters
 
 .characterLoop:
@@ -312,13 +307,13 @@ RenderText:                         ; render the text in a0 at textX,textY, don'
     tst.b   d0
     beq     .finishRender
 
-    subi.b  #32,d0                  ; the ASCII code of the first character in the font set
+    subi.b  #32,d0                      ; the ASCII code of the first character in the font set
 
 .render:
-    mulu    #12,d0                  ; total bytes per character
+    mulu    #12,d0                      ; total bytes per character
     moveq   #0,d1
     move.b  characterHeight,d1
-    move.l  d1,d6                   ; total glyph rows per character
+    move.l  d1,d6                       ; total glyph rows per character
 
     move.b  (a1,d0.w),d1
     subi    #1,d1
@@ -365,8 +360,7 @@ RenderText:                         ; render the text in a0 at textX,textY, don'
     movem.l (a7)+,d3-d4
     bra     .nextBit
 
-.doubleBold:
-    ; draw a 4x4 rectangle
+.doubleBold:                            ; draw a 4x4 rectangle
     movem.l d3-d4,-(a7)
     move.w  d1,d3
     addi    #3,d3
@@ -378,7 +372,7 @@ RenderText:                         ; render the text in a0 at textX,textY, don'
 .nextBit:
     moveq   #0,d0
     move.b  fontSize,d0
-    add.w   d0,d3                     ; scaling factor
+    add.w   d0,d3                       ; scaling factor
     subi    #1,d7
 
     dbra    d5,.bitLoop
@@ -387,7 +381,7 @@ RenderText:                         ; render the text in a0 at textX,textY, don'
     addq    #1,fontCharacterOffset
     moveq   #0,d0
     move.b  fontSize,d0
-    add.w   d0,d4                     ; scaling factor
+    add.w   d0,d4                       ; scaling factor
     dbra    d6,.rowLoop
 
 .finishedCharacter:
@@ -397,7 +391,7 @@ RenderText:                         ; render the text in a0 at textX,textY, don'
     moveq   #0,d1
     move.b  characterWidth,d1
     addi    #2,d1
-    mulu.w  d0,d1                     ; scaling factor
+    mulu.w  d0,d1                       ; scaling factor
     add.w   d1,textX
     bra     .characterLoop
     rts
