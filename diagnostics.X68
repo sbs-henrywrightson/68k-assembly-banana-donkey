@@ -278,7 +278,7 @@ DisplayLaneMask:                        ; print the long word in d0 as binary wi
     move.l  #COLOUR_RED,d1
     cmp.b   #1,d5
     bne     .setBackground
-    btst    #1,gameFlags
+    btst    #GAMEFLAG_CATCH,gameFlags
     beq     .setBackground
     move.l  #COLOUR_GREEN,d1
 .setBackground:

@@ -253,7 +253,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     add.w   width,d3
     move.w  y,d4
     add.w   border,d4
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
 
     ; right border
     move.w  d3,d1
@@ -262,7 +262,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     add.w   height,d4
     sub.w   border,d4
     sub.w   border,d4
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
 
     ; bottom border
     move.w  d3,d1
@@ -271,7 +271,7 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     add.w   border,d2
     add.w   border,d3
     sub.w   width,d3
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
 
     ; left border
     move.w  d3,d1
@@ -280,24 +280,27 @@ DrawBorder:                             ; draw a border at (x, y) of dimensions:
     add.w   border,d4
     add.w   border,d4
     sub.w   height,d4
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
 
     add.w   #1,width
     add.w   #1,height
     rts
 
 RenderParagraph:                    ; a0=paragraph, d1=x, d2=y
+    CacheDataRegisters
+
     move.w  textX,d1
 .lineLoop
     move.w  d1,textX
 
     bsr     RenderText
 
-    add.w  #13,textY
+    add.w  #12,textY
     move.b  (a0),d0
     tst.b   d0
     bne     .lineLoop
 
+    RestoreDataRegisters
     rts
 
 RenderText:                         ; render the text in a0 at textX,textY, don't forget to use SetFont
@@ -343,17 +346,34 @@ RenderText:                         ; render the text in a0 at textX,textY, don'
 .one:
     move.w  d3,d1
     move.w  d4,d2
-    jsr     PlotPoint
-    tst.b   fontBold
-    beq     .nextBit
 
-    ; 3 more pixels to make the single pixel a 2x2 block
-    addi    #1,d1
+    cmpi.b  #1,fontBold
+    beq     .bold
+    cmpi.b  #2,fontBold
+    beq     .doubleBold
+
     jsr     PlotPoint
-    addi    #1,d2
-    jsr     PlotPoint
-    subi    #1,d1
-    jsr     PlotPoint
+    bra     .nextBit
+
+.bold:
+    movem.l d3-d4,-(a7)
+    move.w  d1,d3
+    addi    #1,d3
+    move.w  d2,d4
+    addi    #1,d4
+    jsr     Trap15DrawFilledBox
+    movem.l (a7)+,d3-d4
+    bra     .nextBit
+
+.doubleBold:
+    ; draw a 4x4 rectangle
+    movem.l d3-d4,-(a7)
+    move.w  d1,d3
+    addi    #3,d3
+    move.w  d2,d4
+    addi    #3,d4
+    jsr     Trap15DrawFilledBox
+    movem.l (a7)+,d3-d4
 
 .nextBit:
     moveq   #0,d0

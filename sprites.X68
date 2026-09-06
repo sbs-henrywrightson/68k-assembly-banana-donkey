@@ -156,7 +156,7 @@ BlankSprite:
     bsr     scaleNumber
     add.w   d0,d4
 
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
     
     rts
 

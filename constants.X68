@@ -17,18 +17,19 @@ RES_X                   equ     650         ; width of screen in pixels
 RES_Y                   equ     480         ; height of screen in pixels
 
 ; colour constants, $RRGGBB
-COLOUR_BACKGROUND       equ     $000000     ; black
-COLOUR_WHITE            equ     $ffffff     ; white
-COLOUR_BLACK            equ     $000000     ; black
+COLOUR_BACKGROUND       equ     $000000
+COLOUR_WHITE            equ     $ffffff
+COLOUR_BLACK            equ     $000000
 COLOUR_GREY             equ     $7a7a7a
-COLOUR_RED              equ     $ff0000     ; red
-COLOUR_GREEN            equ     $339c0d     ; green
-COLOUR_BRT_GREEN        equ     $00ff00     ; bright green
-COLOUR_BLUE             equ     $002ee6     ; blue
-COLOUR_YELLOW           equ     $ffff00     ; yellow
-COLOUR_SKY              equ     $70c1ff     ; light blue
-COLOUR_SAND             equ     $ffe894     ; yellow
-COLOUR_SEA              equ     $002ee6     ; blue
+COLOUR_RED              equ     $ff0000
+COLOUR_GREEN            equ     $339c0d
+COLOUR_BRT_GREEN        equ     $00ff00
+COLOUR_BLUE             equ     $002ee6
+COLOUR_YELLOW           equ     $ffff00
+COLOUR_ORANGE           equ     $ff7f00
+COLOUR_SKY              equ     $70c1ff
+COLOUR_SAND             equ     $ffe894
+COLOUR_SEA              equ     $002ee6
 
 ; polygon constants
 MAX_VERTICES            equ     24          ; the maximum number of vertices in a sprite polygone. Keep this EVEN
@@ -48,16 +49,23 @@ DONKEY_SCALE            equ     30          ; percentage of full size
 DONKEY_LANE1_X          equ     185         ; the x-coord of the donkey when in lane 1
 DONKEY_LANE2_X          equ     285         ; the x-coord of the donkey when in lane 2
 DONKEY_LANE3_X          equ     385         ; the x-coord of the donkey when in lane 3
+MAX_LIVES               equ     3
 
 ; score constants
-SCORE_TEXT_X            equ     120
-SCORE_X                 equ     250
-SCORE_WIDTH             equ     90
-LIVES_TEXT_X            equ     350
-LIVES_X                 equ     535
+LIVES_TEXT_X            equ     60
+LIVES_X                 equ     165
 LIVES_WIDTH             equ     20
-SCORE_LINE_Y_HI         equ     440
-SCORE_LINE_Y_LO         equ     462
+
+SCORE_TEXT_X            equ     210
+SCORE_X                 equ     315
+SCORE_WIDTH             equ     90
+
+HISCORE_TEXT_X          equ     420
+HISCORE_X               equ     505
+HISCORE_WIDTH           equ     90
+
+SCORE_LINE_Y_HI         equ     442
+SCORE_LINE_Y_LO         equ     466
 
 ; dirty rectangle buffers
 MAX_DIRTY_SPRITES       equ     MAX_BANANAS+8   ; total number of sprites that require buffer space for their dirty rectangle
@@ -71,9 +79,17 @@ MONKEY_DB_NUMBER        equ     MAX_BANANAS
 DONKEY_DB_NUMBER        equ     MAX_BANANAS+1
 OVERLAY_DB_NUMBER       equ     MAX_BANANAS+2
 
-; Font Constants
+; font constants
 DIGIT_FONT_HEIGHT       equ     7
 GAME_FONT_HEIGHT        equ     10
+
+; game flag constants
+GAMEFLAG_FLIP           equ     0       ; flip the monkey orientation
+GAMEFLAG_CATCH          equ     1       ; the donkey caught a banana
+GAMEFLAG_DROP           equ     2       ; a banana hit the ground
+GAMEFLAG_DEATH          equ     3       ; the player died
+GAMEFLAG_FIRST          equ     4       ; first game of the session
+GAMEFLAG_NEW_HI         equ     5       ; new high score set
 
 ;====================================================
 ;===                                              ===

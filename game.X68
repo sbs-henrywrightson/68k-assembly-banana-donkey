@@ -15,22 +15,15 @@
 PlayGame:
     ;jsr     PositionSprite             ; DEBUG : move a sprite around to get position and scale
 
+    bsr     InitialiseSession
+
+.liveDieRepeat:
     bsr     DrawBackdrop
     bsr     DrawSceneSprites
-    ;jsr     OutputDebugText            ; DEBUG : Remove
     bsr     InitialiseGame
 
     bsr     ShowWelcomeMessage
-    jsr     RepaintScreen
-    
-    jsr     Trap15ReadKeyboardCharacter
-    jsr     RepaintScreen
-
-    jsr     HideMessageOverlay
-    
     bsr     DisplayUI
-
-    jsr     RepaintScreen
 
 .gameLoop:
     moveq   #8,d0                       ; get the current system time
@@ -56,7 +49,19 @@ PlayGame:
     ; MOVE DONKEY - always poll the keyboard to see if the donkey should move
     bsr     MoveDonkey
 
-    bra     .gameLoop
+    btst    #GAMEFLAG_DEATH,gameFlags    ; is the player dead
+    beq     .gameLoop
+    bsr     ShowFiredMessage
+    bra     .liveDieRepeat
+    rts
+
+AwaitKeypress:
+    jsr     Trap15CheckKeyBuffer
+    tst.b   d1
+    beq     .waitForKeypress
+    jsr     Trap15ReadKeyboard
+.waitForKeypress:
+    jsr     Trap15ReadKeyboard
     rts
 
 DrawBackdrop:
@@ -69,7 +74,7 @@ DrawBackdrop:
     move.w  #0,d2                       ; y0
     move.w  #650,d3                     ; x1
     move.w  #149,d4                     ; y1
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
 
     ; DESERT
     move.l  #COLOUR_SAND,d1             ; fill
@@ -80,7 +85,7 @@ DrawBackdrop:
     move.w  #150,d2                     ; y0
     move.w  #650,d3                     ; x1
     move.w  #419,d4                     ; y1
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
 
     ; SEA
     move.l  #COLOUR_SEA,d1              ; fill
@@ -91,7 +96,7 @@ DrawBackdrop:
     move.w  #420,d2                     ; y0
     move.w  #650,d3                     ; x1
     move.w  #480,d4                     ; y1
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
     rts
 
 DrawSceneSprites:
@@ -162,21 +167,35 @@ DrawSceneSprites:
 
     rts
 
+InitialiseSession:
+    ; setup high score
+    move.w  #0,highScore
+    bsr     DisplayHiScore
+
+    bset    #GAMEFLAG_FIRST,gameFlags
+    rts
+
 InitialiseGame:
     jsr     Trap15EchoOff
 
-    moveq   #8,d0
-    trap    #15
+    jsr     Trap15GetSystemTime
+
+    ; FLAGS
+    bclr    #GAMEFLAG_CATCH,gameFlags
+    bclr    #GAMEFLAG_DROP,gameFlags
+    bclr    #GAMEFLAG_DEATH,gameFlags
+    bclr    #GAMEFLAG_NEW_HI,gameFlags
 
     ; GENERAL
-    moveq   #8,d0                       ; seed the random number generator with the current time
-    trap    #15
-    move.l  d1,randomSeed
+    jsr     Trap15GetSystemTime
+    move.l  d1,randomSeed               ; seed the random number generator with the current time
     eori.l  #$12345678,randomSeed
     move.w  #0,bananaCount
+    move.w  #0,score
+    move.w  #MAX_LIVES,lives
 
     ; MONKEY
-    bset    #0,gameFlags                ; set the flip monkey flag
+    bset    #GAMEFLAG_FLIP,gameFlags    ; set the flip monkey flag
     move.w  #0,monkeyOrientation
     bsr     DrawMonkey
 
@@ -187,10 +206,8 @@ InitialiseGame:
     move.w  #0,donkeyOrientation
     bsr     DisplayDonkey
 
-    ;        BANANAS
+    ; BANANAS
     move.l  #0,bananaThrowTime
-    move.w  #0,score
-    move.w  #5,lives
 
     ; LANES
     move.l  #0,bananaMoveTime
@@ -207,15 +224,20 @@ InitialiseGame:
     rts
 
 ShowWelcomeMessage:
+    btst    #GAMEFLAG_FIRST,gameFlags
+    beq     .finished
+
     jsr     ShowMessageOverlay
 
     move.l  #COLOUR_YELLOW,d1
     jsr     SetPenColour
+    move.l  #COLOUR_YELLOW,d1
+    jsr     SetBackgroundColour
 
     bsr     GetBoxCentre
 
     ; Banana Donkey
-    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#1
+    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#2
     lea     gameNameText,a0
     move.w  d1,textX
     move.w  d2,textY
@@ -225,20 +247,45 @@ ShowWelcomeMessage:
 
     ; Instructions
     SetFont gameFont,#GAME_FONT_HEIGHT,#1,#0
-    lea     instructionText,a0
+    lea     instructionText1,a0
     move.w  d1,textX
     move.w  d2,textY
     addi.w  #20,textX
     addi.w  #70,textY
     bsr     RenderParagraph
-    
-    ; Press a key
-    lea     pressKeyText,a0
+
+    lea     instructionText2,a0
     move.w  d1,textX
     move.w  d2,textY
-    addi.w  #80,textX
+    addi.w  #20,textX
+    addi.w  #100,textY
+    bsr     RenderParagraph
+
+    lea     instructionText3,a0
+    move.w  d1,textX
+    move.w  d2,textY
+    addi.w  #20,textX
+    addi.w  #130,textY
+    bsr     RenderParagraph
+    
+    ; Press a key
+    lea     keyToPlayText,a0
+    move.w  d1,textX
+    move.w  d2,textY
+    addi.w  #90,textX
     addi.w  #170,textY
     bsr     RenderText
+
+    bclr    #GAMEFLAG_FIRST,gameFlags
+
+    jsr     RepaintScreen
+    jsr     AwaitKeypress
+    jsr     RepaintScreen
+    
+    jsr     HideMessageOverlay
+    jsr     RepaintScreen
+
+.finished:
     rts
 
 DisplayUI:
@@ -246,17 +293,27 @@ DisplayUI:
     jsr     SetPenColour
     SetFont gameFont,#GAME_FONT_HEIGHT,#3,#1
     
-    lea     scoreText,a0
-    move.w  #SCORE_TEXT_X,textX
-    move.w  #SCORE_LINE_Y_HI,textY
-    jsr     RenderText
-
     lea     livesText,a0
     move.w  #LIVES_TEXT_X,textX
     move.w  #SCORE_LINE_Y_HI,textY
     jsr     RenderText
 
+    lea     scoreText,a0
+    move.w  #SCORE_TEXT_X,textX
+    move.w  #SCORE_LINE_Y_HI,textY
+    jsr     RenderText
+
+    move.l  #COLOUR_ORANGE,d1
+    jsr     SetPenColour
+
+    lea     highScoreText,a0
+    move.w  #HISCORE_TEXT_X,textX
+    move.w  #SCORE_LINE_Y_HI,textY
+    jsr     RenderText
+
     bsr     DisplayScore
+    bsr     DisplayHiScore
+    jsr     RepaintScreen
     rts
 
 DisplayScore:
@@ -264,17 +321,38 @@ DisplayScore:
 
     bsr     ClearScore
 
-    move.l  #COLOUR_WHITE,d1
+    move.l  #COLOUR_GREEN,d1
     jsr     SetPenColour
-    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#1
+    move.l  #COLOUR_YELLOW,d1
+    jsr     SetBackgroundColour
+    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#2
+
+    move.w  lives,d0
+    move.w  #LIVES_X,textX
+    move.w  #SCORE_LINE_Y_HI,textY
+    jsr     RenderNumber
 
     move.w  score,d0
     move.w  #SCORE_X,textX
     move.w  #SCORE_LINE_Y_HI,textY
     jsr     RenderNumber
 
-    move.w  lives,d0
-    move.w  #LIVES_X,textX
+    RestoreDataRegisters
+    rts
+
+DisplayHiScore:
+    CacheDataRegisters
+
+    bsr     ClearHiScore
+
+    move.l  #COLOUR_ORANGE,d1
+    jsr     SetPenColour
+    move.l  #COLOUR_YELLOW,d1
+    jsr     SetBackgroundColour
+    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#2
+
+    move.w  highScore,d0
+    move.w  #HISCORE_X,textX
     move.w  #SCORE_LINE_Y_HI,textY
     jsr     RenderNumber
 
@@ -282,22 +360,35 @@ DisplayScore:
     rts
 
 ClearScore:
-    move.l  #$002ee6,d1
+    move.l  #COLOUR_SEA,d1
     jsr     SetBackgroundColour
-    move.l  #$002ee6,d1
+    move.l  #COLOUR_SEA,d1
     jsr     SetPenColour
-
-    move.w  #SCORE_X,d1
-    move.w  #SCORE_LINE_Y_HI,d2
-    move.w  #SCORE_X+SCORE_WIDTH,d3
-    move.w  #SCORE_LINE_Y_LO,d4
-    jsr     Trap15DrawFilledRectangle
 
     move.w  #LIVES_X,d1
     move.w  #SCORE_LINE_Y_HI,d2
     move.w  #LIVES_X+LIVES_WIDTH,d3
     move.w  #SCORE_LINE_Y_LO,d4
-    jsr     Trap15DrawFilledRectangle
+    jsr     Trap15DrawFilledBox
+
+    move.w  #SCORE_X,d1
+    move.w  #SCORE_LINE_Y_HI,d2
+    move.w  #SCORE_X+SCORE_WIDTH,d3
+    move.w  #SCORE_LINE_Y_LO,d4
+    jsr     Trap15DrawFilledBox
+    rts
+
+ClearHiScore:
+    move.l  #COLOUR_SEA,d1
+    jsr     SetBackgroundColour
+    move.l  #COLOUR_SEA,d1
+    jsr     SetPenColour
+
+    move.w  #HISCORE_X,d1
+    move.w  #SCORE_LINE_Y_HI,d2
+    move.w  #HISCORE_X+HISCORE_WIDTH,d3
+    move.w  #SCORE_LINE_Y_LO,d4
+    jsr     Trap15DrawFilledBox
     rts
 
 ShowFiredMessage:
@@ -309,7 +400,7 @@ ShowFiredMessage:
     bsr     GetBoxCentre
 
     ; Banana Donkey
-    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#1
+    SetFont gameFont,#GAME_FONT_HEIGHT,#3,#2
     lea     gameNameText,a0
     move.w  d1,textX
     move.w  d2,textY
@@ -317,22 +408,45 @@ ShowFiredMessage:
     addi.w  #22,textY
     bsr     RenderText
 
-    ; Instructions
+    ; fired message
+    SetFont gameFont,#GAME_FONT_HEIGHT,#2,#1
+    lea     firedText,a0
+    move.w  d1,textX
+    move.w  d2,textY
+    addi.w  #45,textX
+    addi.w  #60,textY
+    bsr     RenderText
+
     SetFont gameFont,#GAME_FONT_HEIGHT,#1,#0
-    lea     instructionText,a0
+
+    ; employment termination notice
+    lea     tryAgainText,a0
+    btst    #GAMEFLAG_NEW_HI,gameFlags
+    beq     .displatNotice
+    lea     newHighScoreText,a0
+.displatNotice:
     move.w  d1,textX
     move.w  d2,textY
     addi.w  #20,textX
-    addi.w  #70,textY
+    addi.w  #90,textY
     bsr     RenderParagraph
     
     ; Press a key
-    lea     pressKeyText,a0
+    lea     keyPlayAgainText,a0
     move.w  d1,textX
     move.w  d2,textY
     addi.w  #80,textX
     addi.w  #170,textY
     bsr     RenderText
+
+    jsr     RepaintScreen
+    jsr     AwaitKeypress
+    jsr     RepaintScreen
+    
+    jsr     HideMessageOverlay
+    jsr     RepaintScreen
+
+.finished:
     rts
 
 ThrowBanana:
@@ -371,7 +485,7 @@ ThrowBanana:
 
 .spawnComplete:
     addq    #1,bananaCount
-    bset    #0,gameFlags                ; flip the monkey
+    bset    #GAMEFLAG_FLIP,gameFlags    ; flip the monkey
 
     ;jsr     OutputDebugText            ; DEBUG : REMOVE
     ;bsr     RenderLaneContents         ; DEBUG : REMOVE
@@ -383,14 +497,14 @@ ThrowBanana:
 MoveBananas:
     move.l  systemTime,bananaMoveTime
 
-    bclr    #1,gameFlags                ; clear the banana/donkey collision flag
-    bclr    #2,gameFlags                ; clear the banana hit ground flag
+    bclr    #GAMEFLAG_CATCH,gameFlags   ; clear the banana/donkey collision flag
+    bclr    #GAMEFLAG_DROP,gameFlags    ; clear the banana hit ground flag
 
     move.l  lane1,d0
     btst    #31,d0
     beq     .shiftLane1
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
-    bset    #2,gameFlags                ; set the banana hit ground flag
+    bset    #GAMEFLAG_DROP,gameFlags    ; set the banana hit ground flag
 .shiftLane1:
     lsl.l   #1,d0
     move.l  d0,lane1
@@ -399,7 +513,7 @@ MoveBananas:
     btst    #31,d0
     beq     .shiftLane2
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
-    bset    #2,gameFlags                ; set the banana hit ground flag
+    bset    #GAMEFLAG_DROP,gameFlags    ; set the banana hit ground flag
 .shiftLane2:
     lsl.l   #1,d0
     move.l  d0,lane2
@@ -408,7 +522,7 @@ MoveBananas:
     btst    #31,d0
     beq     .shiftLane3
     subq    #1,bananaCount              ; banana dropped off the end so subtract 1
-    bset    #2,gameFlags                ; set the banana hit ground flag
+    bset    #GAMEFLAG_DROP,gameFlags    ; set the banana hit ground flag
 .shiftLane3:
     lsl.l   #1,d0
     move.l  d0,lane3
@@ -416,11 +530,9 @@ MoveBananas:
     bsr     BananaCollisionCheck
     bsr     BananaCatchCheck
 
-    ;jsr     OutputDebugText             ; DEBUG : REMOVE
-
-    btst    #1,gameFlags                ; has the banana collided with the donkey
+    btst    #GAMEFLAG_CATCH,gameFlags   ; has the banana collided with the donkey
     bne     .donkeyCollision
-    btst    #2,gameFlags                ; has a banana hit the ground
+    btst    #GAMEFLAG_DROP,gameFlags    ; has a banana hit the ground
     bne     .donkeyCollision
     bsr     RenderLaneContents          ; banana/donkey collision hasn't occurred so just render the lane contents
     bra     .moveComplete
@@ -430,10 +542,17 @@ MoveBananas:
     bsr     DisplayDonkey
 
 .moveComplete:
-    btst    #2,gameFlags                ; has a banana been dropped
+    btst    #GAMEFLAG_DROP,gameFlags    ; has a banana been dropped
     beq     .finished
+
     sub.w   #1,lives
     bsr     DisplayScore
+    tst.w   lives
+    beq     .death
+    bra     .finishBananaDrop
+.death
+    bset    #GAMEFLAG_DEATH,gameFlags
+.finishBananaDrop
     jsr     PlayDropSound
 
 .finished:
@@ -530,7 +649,7 @@ BananaCollisionCheck:
 .checkBits:
     andi.l  #$E0000000,d1               ; check the last three bits of the lane
     beq     .endChecks                  ; if they're all clear don't do anything
-    bset    #1,gameFlags                ; set the banana/donkey collision flag
+    bset    #GAMEFLAG_CATCH,gameFlags   ; set the banana/donkey collision flag
 
 .endChecks:
     rts
@@ -571,12 +690,20 @@ ClearCaughtBananas:                     ; remove the bananas that have been caug
     jsr     PlayCatchSound
 .bit31:
     btst    #31,d1
-    beq     .finished                   ; if the bit is clear finish with the checks
+    beq     .checkHigh                  ; if the bit is clear finish with the checks
     bclr    #31,d1
     subq    #1,bananaCount
     add.w   #1,score
     bsr     DisplayScore
     jsr     PlayCatchSound
+
+.checkHigh:
+    move.w  score,d0
+    cmp.w   highScore,d0
+    bls     .finished
+    move.w  d0,highScore
+    bsr     DisplayHiScore
+    bset    #GAMEFLAG_NEW_HI,gameFlags
 .finished:
     rts
 
@@ -614,7 +741,7 @@ RenderLaneContents:
     
     cmpi.w  #1,d3                       ; don't flip monkey if we're not in the save phase
     bne     .laneLoop
-    btst    #0,gameFlags                ; don't flip monkey if flip flag isn't set
+    btst    #GAMEFLAG_FLIP,gameFlags    ; don't flip monkey if flip flag isn't set
     beq     .laneLoop
     bsr     RemoveMonkey                ; only flip monkey when in at start of save phase and flip flag is set
     bsr     FlipMonkey
@@ -699,7 +826,7 @@ RenderLaneContents:
     rts
 
 RemoveMonkey:
-    btst    #0,gameFlags
+    btst    #GAMEFLAG_FLIP,gameFlags
     beq     .noFlip
     SetSprite monkey,monkeySpriteSize,#MONKEY_DB_NUMBER,#MONKEY_X,#MONKEY_Y,#MONKEY_SCALE,monkeyOrientation
     jsr     RestoreDirtyRectangle
@@ -707,11 +834,11 @@ RemoveMonkey:
     rts
 
 FlipMonkey:
-    btst    #0,gameFlags
+    btst    #GAMEFLAG_FLIP,gameFlags
     beq     .noFlip
     eori.w  #1,monkeyOrientation
     bsr     DrawMonkey
-    bclr    #0,gameFlags
+    bclr    #GAMEFLAG_FLIP,gameFlags
 .noFlip:
     rts
 

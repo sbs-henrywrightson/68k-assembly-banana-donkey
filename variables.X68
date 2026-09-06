@@ -52,6 +52,8 @@ donkeyLane          dc.w    0           ; the lane the donkey is in. 0=lane1, 1=
 donkeyOrientation   dc.w    0           ; 0=none,1=horizontal,2=vertical,3=both
 score               dc.w    0           ; how many bananas have been caught
 lives               dc.w    0           ; how many bananas drops permitted before game over
+highScore           dc.w    0
+
 gameFlags           dc.w    0           ; a bitmask of game event flags.
                                         ;   bit 0 = flip monkey
                                         ;   bit 1 = banana/donkey collision
@@ -85,7 +87,7 @@ digitPlotY          dc.w    0
 digitPlotLine       dc.b    0
 digitCount          dc.b    0
 fontSize            dc.b    1           ; multiples of fontSize, 0=invalid, 1=normal, 2=larger...
-fontBold            dc.b    0           ; 0=normal, 1=bold
+fontBold            dc.b    0           ; 0=normal, 1=bold, 2=double bold
 textX               dc.w    0
 textY               dc.w    0
 fontCharacterOffset dc.w    0
@@ -97,27 +99,49 @@ fontVariableEVEN    dc.b    0
 
 ; text line variables        O O O O O O O O O O O O O O O O
 cleanEndText        dc.b    '   ',0
-positionText        dc.b    'Position: ',0,0
+positionText        dc.b    'Position:',0
 scaleText           dc.b    'Scale: ',0
-flipText            dc.b    'Flip: ',0,0
+flipText            dc.b    'Flip:',0
 spacerText          dc.b    '   -   ',0
 cycleText           dc.b    'Cycle count: ',0
 gameNameText        dc.b    'Banana Donkey',0
-pressKeyText        dc.b    'Press any key to play',0
-scoreText           dc.b    'Caught : ',0
-livesText           dc.b    'Drops left : ',0
-;firedText           dc.b    'You''ve been FIRED',0
+keyToPlayText       dc.b    'Press any key to play',0
+keyPlayAgainText    dc.b    'Press any key to play again',0
+scoreText           dc.b    'Score :',0
+livesText           dc.b    'Lives :',0
+highScoreText       dc.b    'High : ',0
+firedText           dc.b    'You''ve been FIRED! ',0
+dummyText           dc.b    0
 
 ; text paragraph variables
 ;            O O O O O O O O O O O O O O O O O O O O O O O O O O O O O
-instructionText:
+instructionText1:
     dc.b    'Naughty MONKEY is throwing away good bananas!',0
-    dc.b    'You have been hired to stop the wastefulness. Using',0
-    dc.b    'DONKEY, (with the A & D keys), catch the BANANAS ',0
-    dc.b    'before they splat on the shore. Banana waste will not',0
-    dc.b    'be tolerated. So should you drop more than three ',0
-    dc.b    'bananas, you will be FIRED!',0
+    dc.b    'You have been hired to stop the wastefulness.',0
     dc.b    0,0
+
+instructionText2:
+    dc.b    'Using DONKEY, (with the A/D keys), catch the ',0
+    dc.b    'BANANAS before they splat on the shore.',0
+    dc.b    0,0
+
+instructionText3:
+    dc.b    'Banana waste will not be tolerated. If you drop',0
+    dc.b    'too many bananas, you will be FIRED! ',0
+    dc.b    0,0
+
+newHighScoreText:
+    dc.b    'Well, that went as well as expected! You did manage',0
+    dc.b    'to save a bunch of banana''s and earn the EMPLOYEE',0
+    dc.b    'OF THE MONTH badge but dropping that many bananas',0
+    dc.b    'will not do. Maybe try again?',0
+    dc.b    0,0
+
+tryAgainText:
+    dc.b    'Well, that went as well as expected! Dropping that ',0
+    dc.b    'many bananas is a breach of your employment',0
+    dc.b    'contract. Maybe try again? ',0
+    dc.b    0
 
 ;====================================================
 ;===                                              ===
