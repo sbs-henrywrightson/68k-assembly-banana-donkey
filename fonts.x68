@@ -735,7 +735,6 @@ gameFont:
     *************
     * LOWERCASE *
     *************
-    FontLower:
 
     ; a - ASCII 97
     dc.b 5
