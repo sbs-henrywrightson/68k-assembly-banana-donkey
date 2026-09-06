@@ -32,8 +32,7 @@ Start:
     include 'polygons.X68'
     include 'bresenham-line.X68'
 
-    include 'diagnostics.X68'
-    
+    include 'tool-position-sprite.X68'
 
 Finish:
     simhalt

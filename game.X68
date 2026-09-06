@@ -12,7 +12,7 @@
 ;===                                              ===
 ;====================================================
 PlayGame:
-    ;jsr     PositionSprite             ; DEBUG : move a sprite around to get position and scale
+    ;jsr     PositionSprite             ; DEBUG : move a sprite with cursor keys to get position and scale
 
     bsr     InitialiseSession
 
@@ -25,8 +25,7 @@ PlayGame:
     bsr     DisplayUI
 
 .gameLoop:
-    moveq   #8,d0                       ; get the current system time
-    trap    #15
+    jsr     Trap15GetSystemTime
     move.l  d1,systemTime
     
     ; MOVE BANANAS - is it time to move the bananas
@@ -280,12 +279,12 @@ ShowWelcomeMessage:
 
     bclr    #GAMEFLAG_FIRST,gameFlags
 
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
     jsr     AwaitKeypress
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
     
     jsr     HideMessageOverlay
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
 
 .finished:
     rts
@@ -315,7 +314,7 @@ DisplayUI:
 
     bsr     DisplayScore
     bsr     DisplayHiScore
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
     rts
 
 DisplayScore:
@@ -441,12 +440,12 @@ ShowFiredMessage:
     addi.w  #170,textY
     bsr     RenderText
 
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
     jsr     AwaitKeypress
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
     
     jsr     HideMessageOverlay
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
 
 .finished:
     rts
@@ -489,7 +488,7 @@ ThrowBanana:
     addq    #1,bananaCount
     bset    #GAMEFLAG_FLIP,gameFlags    ; flip the monkey
     jsr     PlayThrowSound
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
 
 .endEvent:
     rts
@@ -556,14 +555,13 @@ MoveBananas:
     jsr     PlayDropSound
 
 .finished:
-    jsr     RepaintScreen
+    jsr     Trap15RepaintScreen
 
     rts
 
 MoveDonkey:
-    moveq   #19,d0
-    move.l  #$00004144,d1               ; check for keypress a,d keys
-    trap    #15
+    move.l  #$00004144,d1               ; check for a,d key press
+    jsr     Trap15KeyPressCheck
 
     move.w  donkeyLane,d0
 

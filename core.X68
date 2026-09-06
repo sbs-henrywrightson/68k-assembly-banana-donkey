@@ -11,11 +11,6 @@
 ;===                     Core                     ===
 ;===                                              ===
 ;====================================================
-Wait:                           ; wait for d1*100 milliseconds
-    moveq   #23,d0
-    trap    #15
-    rts
-
 GetRandomNumber:                ; return a 32bit psudo-random number in d0 using Marsaglia's Xorshift algorithm
     move.l  randomSeed,d0       ; shift left 13 then xor
     lsl.l   #8,d0

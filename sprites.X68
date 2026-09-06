@@ -264,22 +264,17 @@ ProcessDirtyPixels:             ; save the colour of the pixels in the dirty rec
     move.w  d5,d1               ; set trap15-x to x-counter
     add.w   spriteOrigin,d1     ; add the x-offset to trap15-x
     
-    moveq   #83,d0              ; get the pixel colour of the pixel at trap15-x,trap15-y
-    trap    #15
-
+    jsr     Trap15GetPixelColour
     move.l  d0,(a0)+            ; store the pixel in the buffer
     bra     .nextPixel
 
 .restore:                       ; restore pixel from dirty rectangle buffer onto screen
     move.l  (a0)+,d1            ; get the pixel colour from the buffer
-    moveq   #80,d0              ; set the pen colour
-    trap    #15
+    jsr     Trap15SetPenColour
 
     move.w  d5,d1               ; set trap15-x to x-counter
     add.w   spriteOrigin,d1     ; add the x-offset to trap15-x
-    
-    moveq   #82,d0              ; draw a pixel at trap15-x,trap15-y
-    trap    #15
+    jsr     Trap15PlotPixel     ; draw a pixel at trap15-x,trap15-y
 
 .nextPixel:
     dbra    d5,.widthLoop

@@ -112,8 +112,7 @@ FillPolygon:
     move.w  (a1)+,d3            ; end-x from the right scan line
     move.w  d5,d4               ; end-y from the counter
     
-    moveq   #84,d0              ; draw the line between (d1,d2) and (d3,d4)
-    trap    #15
+    jsr     Trap15DrawLine      ; draw the line between (d1,d2) and (d3,d4)
     
     addq    #1,d5               ; increment the y-coord
     cmp.w   scanLineMaxY,d5
@@ -140,8 +139,7 @@ DrawPolygon:
     move.w  d0,d4               ; y0
     swap    d0
     move.w  d0,d3               ; x0
-    moveq   #84,d0              ; line A-B
-    trap    #15
+    jsr     Trap15DrawLine      ; line A-B
     
     dbra    d5,.verticesLoop
     

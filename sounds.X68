@@ -14,44 +14,36 @@
 
 LoadSounds:                             ; load all the sound files into memory
     lea     squelchFilePath,a1
-    moveq   #71,d0
     moveq   #SQUELCH_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     scrumpleFilePath,a1
-    moveq   #71,d0
     moveq   #SCRUMPLE_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     Monkey1FilePath,a1
-    moveq   #71,d0
     moveq   #MONKEY_1_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     Monkey2FilePath,a1
-    moveq   #71,d0
     moveq   #MONKEY_2_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     Monkey3FilePath,a1
-    moveq   #71,d0
     moveq   #MONKEY_3_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     Monkey4FilePath,a1
-    moveq   #71,d0
     moveq   #MONKEY_4_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     Monkey5FilePath,a1
-    moveq   #71,d0
     moveq   #MONKEY_5_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
 
     lea     Monkey6FilePath,a1
-    moveq   #71,d0
     moveq   #MONKEY_6_SOUND_ID,d1
-    trap    #15
+    jsr     Trap15LoadWAVFile
     rts
 
 PlayCatchSound:                         ; banana caught by donkey
@@ -119,9 +111,6 @@ PlaySound:                              ; play the sound who's ID is in d1
     sub.l   playSoundTime,d0            ; debounce this event to prevent sounds overlapping each other
     cmp.l   #PLAY_SOUND_INTERVAL,d0     ; has it been long enough since the last sound played
     blo     .finish
-
-    moveq   #72,d0
-    trap    #15
-
+    jsr     Trap15PlaySound
 .finish
     rts
